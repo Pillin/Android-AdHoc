@@ -39,9 +39,8 @@ type ip >/dev/null 2>&1 && ip route del table gprs default >/dev/null 2>&1
 # Xperia X10 running Gingerbread needs extra time for wifi config to finish
 sleep 1
 
-# run olsrd
-(./olsrd -f olsrd.conf -i $brncl_if_lan > $brncl_path/../app_log/olsrd.log 2>&1) &
-echo "OLSR on http://${brncl_lan_gw}:8080"
+# Active UDP ip route
+ip route add 224.0.0.0/4 dev ${brncl_if_lan}
 
 # the association loop
 ./wifi assoc
