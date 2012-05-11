@@ -20,7 +20,6 @@ public class NativeHelper {
 
     static String SU_C;
     static String RUN;
-    static String OLSRD;
     static String WIFI;
 
 	public static void setup(Context context) {
@@ -28,7 +27,6 @@ public class NativeHelper {
 		app_log = context.getDir("log", Context.MODE_PRIVATE).getAbsoluteFile();
 		SU_C = new File(app_bin, "su_c").getAbsolutePath();
 		RUN = new File(app_bin, "run").getAbsolutePath();
-		OLSRD = new File(app_bin, "olsrd").getAbsolutePath();
 		WIFI = new File(app_bin, "wifi").getAbsolutePath();
 	}
 
@@ -74,7 +72,6 @@ public class NativeHelper {
 		}
 		chmod("0750", new File(SU_C));
 		chmod("0750", new File(RUN));
-		chmod("0750", new File(OLSRD));
 		chmod("0750", new File(WIFI));
 		chmod("0750", new File(app_bin, "script_aria"));
 		chmod("0750", new File(app_bin, "script_hero"));

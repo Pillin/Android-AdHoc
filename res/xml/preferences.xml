@@ -19,7 +19,7 @@
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
     <PreferenceCategory android:title="Wireless LAN">
         <EditTextPreference android:title="SSID (Network Name)"
-            android:key="@string/lan_essid" android:defaultValue="olsr.org"
+            android:key="@string/lan_essid" android:defaultValue="HLMP-MANET"
             android:singleLine="true" />
         <net.szym.barnacle.MACPreference android:title="BSSID (Optional)"
             android:key="@string/lan_bssid" android:singleLine="true"
