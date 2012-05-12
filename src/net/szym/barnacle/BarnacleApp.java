@@ -29,7 +29,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.Uri;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
@@ -45,7 +44,6 @@ public class BarnacleApp extends android.app.Application {
 
     final static String FILE_INI    = "brncl.ini";
 
-    final static String ACTION_CLIENTS = "net.szym.barnacle.SHOW_CLIENTS";
     final static String ACTION_TOGGLE = "net.szym.barnacle.TOGGLE_STATE";
     final static String ACTION_CHECK = "net.szym.barnacle.CHECK_STATE";
     final static String ACTION_CHANGED = "net.szym.barnacle.STATE_CHANGED";
@@ -56,7 +54,6 @@ public class BarnacleApp extends android.app.Application {
 
     SharedPreferences prefs;
     private StatusActivity  statusActivity = null;
-    private ClientsActivity clientsActivity = null;
     private Toast toast;
 
     private WifiManager wifiManager;
@@ -64,10 +61,9 @@ public class BarnacleApp extends android.app.Application {
     // notifications
     private NotificationManager notificationManager;
     private Notification notification;
-    private Notification notificationClientAdded;
+    
     private Notification notificationError;
     final static int NOTIFY_RUNNING = 0;
-    final static int NOTIFY_CLIENT = 1;
     final static int NOTIFY_ERROR = 2;
 
     public BarnacleService service = null;
@@ -103,7 +99,8 @@ public class BarnacleApp extends android.app.Application {
         // if IP address isn't set, generate one
         if (prefs.getString(getString(R.string.lan_gw), "").equals("")) {
         	SharedPreferences.Editor e = prefs.edit();
-        	String myIP = "172.29." + String.valueOf((int)(Math.random() * 255)) + "." + String.valueOf((int)(Math.random() * 255));
+//        	FVALVERD TODO: parametrizar el 170.160
+        	String myIP = "170.160." + String.valueOf((int)(Math.random() * 255)) + "." + String.valueOf((int)(Math.random() * 255));
         	e.putString(getString(R.string.lan_gw), myIP);
         	e.commit();
         	Log.i(TAG, "Generated IP: " + myIP);
@@ -113,9 +110,6 @@ public class BarnacleApp extends android.app.Application {
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         notification = new Notification(R.drawable.barnacle, getString(R.string.notify_running), 0);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        notificationClientAdded = new Notification(android.R.drawable.stat_sys_warning,
-                                                  getString(R.string.notify_client), 0);
-        notificationClientAdded.flags = Notification.FLAG_AUTO_CANCEL;
         notificationError = new Notification(R.drawable.barnacle_error,
                                             getString(R.string.notify_error), 0);
         notificationError.setLatestEventInfo(this,
@@ -179,20 +173,15 @@ public class BarnacleApp extends android.app.Application {
         return getState() == BarnacleService.STATE_STOPPED;
     }
 
-    void setStatusActivity(StatusActivity a) { // for updates
-        statusActivity = a;
+    void setStatusActivity(StatusActivity sa) { // for updates
+        statusActivity = sa;
     }
-    void setClientsActivity(ClientsActivity a) { // for updates
-        clientsActivity = a;
-    }
-
+    
     void serviceStarted(BarnacleService s) {
         Log.w(TAG, "serviceStarted");
         service = s;
         log = service.log;
         service.startRequest();
-        if (clientsActivity != null)
-            clientsActivity.update();
     }
 
     static void broadcastState(Context ctx, int state) {
@@ -218,41 +207,6 @@ public class BarnacleApp extends android.app.Application {
         lastScanResult = result;
     }
 
-    void clientAdded(BarnacleService.ClientData cd) {
-        if (prefs.getBoolean("client_notify", true)) {
-            notificationClientAdded.defaults = 0;
-            if (prefs.getBoolean("client_light", false)) {
-                notificationClientAdded.flags |= Notification.FLAG_SHOW_LIGHTS;
-                notificationClientAdded.ledARGB = 0xffffff00; // yellow
-                notificationClientAdded.ledOnMS = 500;
-                notificationClientAdded.ledOffMS = 1000;
-            } else {
-                notificationClientAdded.flags &= ~Notification.FLAG_SHOW_LIGHTS;
-            }
-            String sound = prefs.getString("client_sound", null);
-            if (sound == null) {
-                notificationClientAdded.defaults |= Notification.DEFAULT_SOUND;
-                // | Notification.DEFAULT_VIBRATE // requires permission
-            } else {
-                if (sound.length() > 0)
-                    notificationClientAdded.sound = Uri.parse(sound);
-            }
-            Intent notificationIntent = new Intent(this, StatusActivity.class);
-            notificationIntent.setAction(ACTION_CLIENTS);
-            PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-            notificationClientAdded.setLatestEventInfo(this, getString(R.string.app_name),
-                            getString(R.string.notify_client) + " " + cd.toNiceString(), contentIntent);
-            notificationManager.notify(NOTIFY_CLIENT, notificationClientAdded);
-        }
-
-        if (clientsActivity != null)
-            clientsActivity.update();
-    }
-
-    void cancelClientNotify() {
-        notificationManager.cancel(NOTIFY_CLIENT);
-    }
-
     void processStarted() {
         Log.w(TAG, "processStarted");
         Intent notificationIntent = new Intent(this, StatusActivity.class);
@@ -266,7 +220,6 @@ public class BarnacleApp extends android.app.Application {
     void processStopped() {
         Log.w(TAG, "processStopped");
         notificationManager.cancel(NOTIFY_RUNNING);
-        notificationManager.cancel(NOTIFY_CLIENT);
         if (service != null) service.stopSelf();
         service = null;
         updateStatus();

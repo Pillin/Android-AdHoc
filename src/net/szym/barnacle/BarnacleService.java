@@ -53,8 +53,6 @@ public class BarnacleService extends android.app.Service {
     // requests from activities
     final static int MSG_START      = 5;
     final static int MSG_STOP       = 6;
-    final static int MSG_ASSOC      = 7;
-    final static int MSG_STATS      = 8;
     // app states
     public final static int STATE_STOPPED  = 0;
     public final static int STATE_STARTING = 1;
@@ -80,24 +78,11 @@ public class BarnacleService extends android.app.Service {
     final static int COLOR_LOG      = 0xff888888;//android.R.color.primary_text_dark;
     final static int COLOR_TIME     = 0xffffffff;
 
-    public static class ClientData {
-        final String mac;
-        final String ip;
-        final String hostname;
-        boolean allowed;
-        ClientData(String m, String i, String h) { mac = m; ip = i; hostname = h; allowed = false; }
-        public String toString() { return mac + " " + ip + " " + hostname; }
-        public String toNiceString() { return hostname != null ? hostname : mac; }
-    }
-    public final ArrayList<ClientData> clients = new ArrayList<ClientData>();
-    public final Util.TrafficStats stats = new Util.TrafficStats();
-
     // WARNING: this is not entirely safe
     public static BarnacleService singleton = null;
 
     // cached for convenience
     private String if_lan = "";
-    private Util.MACAddress if_mac = null;
     private BarnacleApp app;
     private WifiManager wifiManager;
     private ConnectivityManager connManager;
@@ -109,17 +94,8 @@ public class BarnacleService extends android.app.Service {
         mHandler.sendEmptyMessage(MSG_START);
     }
 
-    public void assocRequest() {
-        mHandler.sendEmptyMessage(MSG_ASSOC);
-    }
-
     public void stopRequest() {
         mHandler.sendEmptyMessage(MSG_STOP);
-    }
-
-    public void statsRequest(long delay) {
-        Message msg = mHandler.obtainMessage(MSG_STATS);
-        mHandler.sendMessageDelayed(msg, delay);
     }
 
     public int getState() {
@@ -203,13 +179,6 @@ public class BarnacleService extends android.app.Service {
             if (msg.obj != null) {
                 String line = (String)msg.obj;
                 log(true, line); // just dump it and ignore it
-                if (line.startsWith("dnsmasq: DHCPACK")) {
-                    String[] vals = line.split(" +");
-                    if (vals.length > 3) {
-                        ClientData cd = new ClientData(vals[3], vals[2], vals.length > 4 ? vals[4] : null);
-                        clientAdded(cd);
-                    }
-                }
             } else {
                 // no message, means process died
                 log(true, getString(R.string.unexpected));
@@ -238,28 +207,7 @@ public class BarnacleService extends android.app.Service {
                 // ignore it, wait for MSG_ERROR(null)
                 break;
             }
-            if (line.startsWith("DHCP: ACK")) {
-                // DHCP: ACK <MAC> <IP> [<HOSTNAME>]
-                String[] vals = line.split(" +");
-                ClientData cd = new ClientData(vals[2], vals[3], vals.length > 4 ? vals[4] : null);
-                clientAdded(cd);
-            } else if (line.startsWith("WIFI: OK")) {
-                // WIFI: OK <IFNAME> <MAC>
-                String[] parts = line.split(" +");
-                if_lan = parts[2];
-                if_mac = Util.MACAddress.parse(parts[3]);
-                if (state == STATE_STARTING) {
-                    state = STATE_RUNNING;
-                    log(false, getString(R.string.running));
-                    clients.clear();
-                    stats.init(Util.fetchTrafficData(if_lan));
-                    //app.foundIfLan(if_lan); // this will allow 3G <-> 4G with simple restart
-                    app.processStarted();
-                    mHandler.sendEmptyMessage(MSG_ASSOC);
-                }
-            } else {
-                log(false, line);
-            }
+            log(false, line);
             break;
         case MSG_START:
 
@@ -322,22 +270,6 @@ public class BarnacleService extends android.app.Service {
             log(false, getString(R.string.stopped));
             state = STATE_STOPPED;
             break;
-        case MSG_ASSOC:
-            if (state != STATE_RUNNING) return;
-            if (tellProcess("WLAN")) {
-                app.updateToast(getString(R.string.beaconing), true);
-            }
-            if (clients.isEmpty() && app.prefs.getBoolean("lan_autoassoc", false)) {
-                mHandler.removeMessages(MSG_ASSOC);
-                // rebeacon, in 5 seconds
-                mHandler.sendEmptyMessageDelayed(MSG_ASSOC, 5000);
-            }
-            break;
-        case MSG_STATS:
-            mHandler.removeMessages(MSG_STATS);
-            if (state != STATE_RUNNING || if_lan.length() == 0) return;
-            stats.update(Util.fetchTrafficData(if_lan));
-            break;
         }
         app.updateStatus();
         if (state == STATE_STOPPED)
@@ -372,27 +304,6 @@ public class BarnacleService extends android.app.Service {
                 mHandler.obtainMessage(MSG_EXCEPTION, e).sendToTarget();
             }
         }
-    }
-
-    private void clientAdded(ClientData cd) {
-
-        for (int i = 0; i < clients.size(); ++i) {
-            ClientData c = clients.get(i);
-            if (c.mac.equals(cd.mac)) {
-                if (c.ip.equals(cd.ip)) {
-                    log(false, String.format(getString(R.string.renewed), cd.toNiceString()));
-                    return; // no change
-                }
-                cd.allowed = c.allowed;
-                clients.remove(i); // we'll add it at the end
-                break;
-            }
-        }
-        clients.add(cd);
-
-        log(false, String.format(getString(R.string.connected), cd.toNiceString()));
-        app.clientAdded(cd);
-
     }
 
     private boolean checkUplink() {
