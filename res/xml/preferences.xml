@@ -21,9 +21,6 @@
         <EditTextPreference android:title="SSID (Network Name)"
             android:key="@string/lan_essid" android:defaultValue="HLMP-MANET"
             android:singleLine="true" />
-        <net.szym.barnacle.MACPreference android:title="BSSID (Optional)"
-            android:key="@string/lan_bssid" android:singleLine="true"
-            android:hint="unique MAC address" />
         <ListPreference android:title="Channel"
             android:key="@string/lan_channel" android:defaultValue="7"
             android:entries="@array/channel_names" android:entryValues="@array/channel_values" />
