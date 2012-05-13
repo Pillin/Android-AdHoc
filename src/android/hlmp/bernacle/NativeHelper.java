@@ -68,7 +68,7 @@ public class NativeHelper {
 			}
 		} catch (IOException e) {
 			result = false;
-			Log.e(BarnacleApp.TAG, "Can't unzip", e);
+			Log.e(NativeHelper.TAG, "Can't unzip", e);
 		}
 		chmod("0750", new File(SU_C));
 		chmod("0750", new File(RUN));
@@ -80,26 +80,25 @@ public class NativeHelper {
 	}
 
 	public static void chmod(String modestr, File path) {
-		Log.i(TAG, "chmod " + modestr + " " + path.getAbsolutePath());
+		String absolute_path = path.getAbsolutePath();
+		Log.i(TAG, "chmod " + modestr + " " + absolute_path);
 		try {
 			Class<?> fileUtils = Class.forName("android.os.FileUtils");
 			Method setPermissions = fileUtils.getMethod("setPermissions", String.class,
 					int.class, int.class, int.class);
 			int mode = Integer.parseInt(modestr, 8);
-			int a = (Integer) setPermissions.invoke(null, path.getAbsolutePath(), mode,
-					-1, -1);
+			int a = (Integer) setPermissions.invoke(null, absolute_path, mode, -1, -1);
 			if (a != 0) {
-				Log.i(TAG, "ERROR: android.os.FileUtils.setPermissions() returned " + a
-						+ " for '" + path + "'");
+				Log.e(TAG, "setPermissions() returned " + a + " for '" + path + "'");
 			}
 		} catch (ClassNotFoundException e) {
-			Log.i(TAG, "android.os.FileUtils.setPermissions() failed:", e);
+			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (IllegalAccessException e) {
-			Log.i(TAG, "android.os.FileUtils.setPermissions() failed:", e);
+			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (InvocationTargetException e) {
-			Log.i(TAG, "android.os.FileUtils.setPermissions() failed:", e);
+			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (NoSuchMethodException e) {
-			Log.i(TAG, "android.os.FileUtils.setPermissions() failed:", e);
+			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		}
 	}
 }

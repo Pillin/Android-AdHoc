@@ -30,9 +30,6 @@
         <CheckBoxPreference android:title="Skip wpa_supplicant"
             android:summary="Configure wifi directly"
             android:key="@string/lan_wext" />
-        <CheckBoxPreference android:title="Auto Associate"
-            android:summary="Associate every 5 seconds until a client connects"
-            android:key="lan_autoassoc" />
     </PreferenceCategory>
     <PreferenceCategory android:title="Advanced">
         <PreferenceScreen android:title="IPv4" android:summary="IPv4 Host Configuration">

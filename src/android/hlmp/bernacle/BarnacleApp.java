@@ -98,7 +98,7 @@ public class BarnacleApp extends android.app.Application {
         // if IP address isn't set, generate one
         if (prefs.getString(getString(R.string.lan_gw), "").equals("")) {
         	SharedPreferences.Editor e = prefs.edit();
-//        	FVALVERD TODO: parametrizar el 170.160
+//        	FVALVERD TODO: parametrizar el 170.160.X.X
         	String myIP = "170.160." + String.valueOf((int)(Math.random() * 255)) + "." + String.valueOf((int)(Math.random() * 255));
         	e.putString(getString(R.string.lan_gw), myIP);
         	e.commit();

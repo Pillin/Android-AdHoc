@@ -124,6 +124,7 @@ public class BarnacleService extends android.app.Service {
         app = (BarnacleApp)getApplication();
         app.serviceStarted(this);
 
+        // Unlock recive UDP ports
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
         wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BarnacleService");
         wakeLock.acquire();
@@ -249,7 +250,7 @@ public class BarnacleService extends android.app.Service {
                     log(false, getString(R.string.restarting));
                     stopProcess(); // this tears down wifi
                     wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
-                    // we should wait until wifi is disabled...
+                    // TODO: we should wait until wifi is disabled...
                     state = STATE_STARTING;
                 } else if (state == STATE_STARTING) {
                     if ((wifiState == WifiManager.WIFI_STATE_ENABLED) ||
