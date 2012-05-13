@@ -34,13 +34,14 @@ import android.widget.ToggleButton;
 import android.hlmp.bernacle.R;
 
 public class StatusActivity extends Activity {
-    private BarnacleApp app;
-
-    private ToggleButton onoff;
-
-    final static int DLG_ROOT = 1;
+	
+	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
     final static int DLG_SUPPLICANT = 3;
+	
+	private BarnacleApp app;
+    private ToggleButton onoff;
+    
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -49,13 +50,14 @@ public class StatusActivity extends Activity {
         app = (BarnacleApp)getApplication();
         setContentView(R.layout.main);
 
-        // control interface
         onoff = (ToggleButton) findViewById(R.id.onoff);
         onoff.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
                 onoff.setPressed(true);
-                if (onoff.isChecked()) app.startService();
+                if (onoff.isChecked()) {
+                	app.startService();
+                }
                 else {
                     app.stopService();
                 }
@@ -64,16 +66,19 @@ public class StatusActivity extends Activity {
 
         app.setStatusActivity(this);
     }
+    
     @Override
     protected void onDestroy() {
         super.onDestroy();
         app.setStatusActivity(null);
     }
+    
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.main, menu);
         return true;
     }
+    
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
@@ -83,6 +88,7 @@ public class StatusActivity extends Activity {
         }
         return(super.onOptionsItemSelected(item));
     }
+    
     @Override
     protected Dialog onCreateDialog(int id) {
         // TODO: these should not create and remove dialogs, but restore and dismiss
@@ -96,10 +102,14 @@ public class StatusActivity extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
                         Uri uri = Uri.parse(getString(R.string.rootUrl));
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    }})
+                    }
+                 })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) { removeDialog(DLG_ROOT); }})
+                    public void onClick(DialogInterface dialog, int which) {
+                    	removeDialog(DLG_ROOT);
+                    }
+                 })
                 .create();
         }
         if (id == DLG_ERROR) {
@@ -112,10 +122,14 @@ public class StatusActivity extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
                         Uri uri = Uri.parse(getString(R.string.fixUrl));
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    }})
+                    }
+                })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) { removeDialog(DLG_ERROR); }})
+                    public void onClick(DialogInterface dialog, int which) {
+                    	removeDialog(DLG_ERROR);
+                    }
+                })
                 .create();
         }
         if (id == DLG_SUPPLICANT) {
@@ -128,10 +142,14 @@ public class StatusActivity extends Activity {
                     public void onClick(DialogInterface dialog, int which) {
                         app.prefs.edit().putBoolean(getString(R.string.lan_wext), true).commit();
                         app.updateToast("Settings updated, try again...", true);
-                    }})
+                    }
+                })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
-                    public void onClick(DialogInterface dialog, int which) { removeDialog(DLG_ROOT); }})
+                    public void onClick(DialogInterface dialog, int which) {
+                    	removeDialog(DLG_ROOT);
+                    }
+                })
                 .create();
         }
         return null;
@@ -144,6 +162,9 @@ public class StatusActivity extends Activity {
         app.cleanUpNotifications();
     }
 
+    /*
+     * Update Toggle Button Start-Stop
+     */
     void update() {
         int state = app.getState();
 

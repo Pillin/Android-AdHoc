@@ -17,43 +17,63 @@
   along with this program.  If not, see <http://www.gnu.org/licenses/>.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="android.hlmp.bernacle" android:versionName="0.0" android:versionCode="0">
+    package="android.hlmp.bernacle"
+    android:versionCode="0"
+    android:versionName="0.1" >
 
     <uses-sdk android:minSdkVersion="10" />
 
     <uses-permission android:name="android.permission.CHANGE_WIFI_STATE" />
-    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE"/>
-    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
+    <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
+    <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
-    <permission android:name="android.hlmp.bernacle.ACCESS_STATE"
-        android:protectionLevel="normal"
+    <permission
+        android:name="android.hlmp.bernacle.ACCESS_STATE"
+        android:label="view Barnacle state"
         android:permissionGroup="android.permission-group.NETWORK"
-        android:label="view Barnacle state"/>
-    <permission android:name="android.hlmp.bernacle.CHANGE_STATE"
+        android:protectionLevel="normal" />
+    <permission
+        android:name="android.hlmp.bernacle.CHANGE_STATE"
         android:label="change Barnacle state"
         android:permissionGroup="android.permission-group.NETWORK"
         android:protectionLevel="dangerous" />
 
-    <application android:label="@string/app_name" android:icon="@drawable/barnacle_head"
-        android:name="android.hlmp.bernacle.BarnacleApp" android:description="@string/app_name">
-        <activity android:launchMode="singleTask" android:name="StatusActivity">
+    <application
+        android:name="android.hlmp.bernacle.BarnacleApp"
+        android:description="@string/app_name"
+        android:icon="@drawable/barnacle_head"
+        android:label="@string/app_name" >
+        <activity
+            android:name="StatusActivity"
+            android:launchMode="singleTask" >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
                 <category android:name="android.intent.category.VOICE_LAUNCH" />
             </intent-filter>
         </activity>
-        <activity android:launchMode="singleTop" android:name="android.hlmp.bernacle.SettingsActivity" />
-        <service android:label="Barnacle Wifi Tether" android:icon="@drawable/barnacle_head"
-            android:name="android.hlmp.bernacle.BarnacleService" />
-        <receiver android:name="android.hlmp.bernacle.ToggleReceiver" android:permission="android.hlmp.bernacle.CHANGE_STATE">
+        <activity
+            android:name="android.hlmp.bernacle.SettingsActivity"
+            android:launchMode="singleTop" />
+
+        <service
+            android:name="android.hlmp.bernacle.BarnacleService"
+            android:icon="@drawable/barnacle_head"
+            android:label="Barnacle Wifi Tether" />
+
+        <receiver
+            android:name="android.hlmp.bernacle.ToggleReceiver"
+            android:permission="android.hlmp.bernacle.CHANGE_STATE" >
             <intent-filter>
                 <action android:name="android.hlmp.bernacle.TOGGLE_STATE" />
             </intent-filter>
         </receiver>
-        <receiver android:name="ToggleReceiver" android:permission="android.hlmp.bernacle.ACCESS_STATE">
+        <receiver
+            android:name="android.hlmp.bernacle.ToggleReceiver"
+            android:permission="android.hlmp.bernacle.ACCESS_STATE" >
             <intent-filter>
                 <action android:name="android.hlmp.bernacle.CHECK_STATE" />
             </intent-filter>
