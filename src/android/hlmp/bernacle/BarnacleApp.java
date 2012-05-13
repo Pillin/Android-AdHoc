@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +35,7 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+import android.hlmp.bernacle.R;
 
 /**
 * Manages preferences, activities and prepares the service
@@ -42,11 +43,9 @@ import android.widget.Toast;
 public class BarnacleApp extends android.app.Application {
     final static String TAG = "BarnacleApp";
 
-    final static String FILE_INI    = "brncl.ini";
-
-    final static String ACTION_TOGGLE = "net.szym.barnacle.TOGGLE_STATE";
-    final static String ACTION_CHECK = "net.szym.barnacle.CHECK_STATE";
-    final static String ACTION_CHANGED = "net.szym.barnacle.STATE_CHANGED";
+    final static String ACTION_TOGGLE = "android.hlmp.bernacle.TOGGLE_STATE";
+    final static String ACTION_CHECK = "android.hlmp.bernacle.CHECK_STATE";
+    final static String ACTION_CHANGED = "android.hlmp.bernacle.STATE_CHANGED";
 
     final static int ERROR_ROOT = 1;
     final static int ERROR_OTHER = 2;

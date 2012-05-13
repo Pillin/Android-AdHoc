@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import android.content.Context;
 import android.preference.EditTextPreference;
@@ -25,6 +25,8 @@ import android.view.View;
 import android.widget.EditText;
 import android.text.method.DigitsKeyListener;
 import android.widget.Toast;
+
+import android.hlmp.bernacle.R;
 
 /**
 * EditTextPreference that allows IP addresses only

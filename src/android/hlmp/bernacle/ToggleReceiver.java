@@ -1,4 +1,4 @@
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import android.content.BroadcastReceiver;
 import android.content.Context;

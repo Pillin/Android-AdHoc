@@ -16,7 +16,7 @@
  *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import android.os.Bundle;
 import android.preference.EditTextPreference;
@@ -24,6 +24,8 @@ import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
 import android.widget.Toast;
+
+import android.hlmp.bernacle.R;
 
 public class SettingsActivity extends PreferenceActivity implements Preference.OnPreferenceChangeListener {
     final static int[] prefids = {

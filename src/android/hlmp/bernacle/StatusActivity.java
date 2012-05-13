@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import java.text.NumberFormat;
 
@@ -30,12 +30,12 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.Window;
-import android.widget.Button;
 import android.widget.TabHost;
 import android.widget.TabHost.OnTabChangeListener;
 import android.widget.TextView;
 import android.widget.ToggleButton;
+
+import android.hlmp.bernacle.R;
 
 public class StatusActivity extends android.app.TabActivity {
     private BarnacleApp app;

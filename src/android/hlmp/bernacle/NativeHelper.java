@@ -1,4 +1,4 @@
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import java.io.BufferedOutputStream;
 import java.io.File;

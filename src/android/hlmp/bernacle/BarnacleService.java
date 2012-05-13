@@ -16,13 +16,12 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package net.szym.barnacle;
+package android.hlmp.bernacle;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
-
 import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -30,7 +29,6 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.wifi.WifiManager;
 import android.os.Handler;
 import android.os.IBinder;
@@ -38,6 +36,8 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
+
+import android.hlmp.bernacle.R;
 
 /**
 * Manages the running process, client list, and log
@@ -81,11 +81,9 @@ public class BarnacleService extends android.app.Service {
     // WARNING: this is not entirely safe
     public static BarnacleService singleton = null;
 
-    // cached for convenience
-    private String if_lan = "";
     private BarnacleApp app;
     private WifiManager wifiManager;
-    private ConnectivityManager connManager;
+    
     private boolean filteringEnabled = false;
     private Method mStartForeground = null;
 
@@ -112,8 +110,7 @@ public class BarnacleService extends android.app.Service {
         singleton = this;
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        connManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
-
+        
         try {
             mStartForeground = getClass().getMethod("startForeground", new Class[] {
                     int.class, Notification.class});
@@ -306,15 +303,6 @@ public class BarnacleService extends android.app.Service {
         }
     }
 
-    private boolean checkUplink() {
-        if (app.prefs.getBoolean("wan_nowait", false)) {
-            return true;
-        }
-        NetworkInfo mobileInfo = connManager.getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-        NetworkInfo wimaxInfo = connManager.getNetworkInfo(6);
-        return (mobileInfo.isConnected() || ((wimaxInfo != null) && wimaxInfo.isConnected()));
-    }
-
     /** Prepare env vars for ./wifi from preferences */
     protected String[] buildEnvFromPrefs() {
     	ArrayList<String> envlist = new ArrayList<String>();
@@ -379,16 +367,6 @@ public class BarnacleService extends android.app.Service {
             return false;
         }
         return true;
-    }
-
-    private boolean tellProcess(String msg) {
-        if (process != null) {
-            try {
-                process.getOutputStream().write((msg+"\n").getBytes());
-                return true;
-            } catch (Exception e) {} // just ignore it
-        }
-        return false;
     }
 
     private void stopProcess() {
