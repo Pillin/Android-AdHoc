@@ -155,12 +155,6 @@ public class StatusActivity extends android.app.TabActivity {
                         app.prefs.edit().putBoolean(getString(R.string.lan_wext), true).commit();
                         app.updateToast("Settings updated, try again...", true);
                     }})
-                .setNeutralButton("More info", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Uri uri = Uri.parse(getString(R.string.wikiUrl));
-                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    }})
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) { removeDialog(DLG_ROOT); }})

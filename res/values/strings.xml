@@ -23,9 +23,7 @@
     <string name="notify_running">Sharing your connection</string>
     <string name="notify_client">Client connected</string>
     <string name="notify_error">Error occured</string>
-    <string name="announce">Associate</string>
     <string name="noprefs">Please, set your preferences</string>
-    <string name="noclients">No clients connected</string>
     <string name="starting">Starting…</string>
     <string name="dataready">Data network is ready</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>
@@ -33,10 +31,6 @@
     <string name="waitwifi">Waiting until Wifi is disabled</string>
     <string name="running">Running…</string>
     <string name="restarting">Restarting…</string>
-    <string name="beaconing">beaconing ad-hoc network</string>
-    <string name="filterok">Connected to NAT</string>
-    <string name="filtererr">Could not connect to NAT, will retry later</string>
-    <string name="filterupdated">Updated NAT filter</string>
     <string name="connected">Connected %s</string>
     <string name="renewed">Renewed %s</string>
     <string name="stopped">Stopped</string>
@@ -113,10 +107,8 @@
         <item>Aria/Liberty (see blog)</item>
     </string-array>
 
-    <string name="websiteUrl">http://szym.net/barnacle/</string>
     <string name="fixUrl">http://szym.net/barnacle/fix/</string>
     <string name="rootUrl">http://szym.net/barnacle/faq/#root</string>
-    <string name="wikiUrl">http://github.com/szym/barnacle/wiki</string>
-    <string name="paypalUrl">https://www.paypal.com/</string>
+
 
 </resources>
