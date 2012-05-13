@@ -231,7 +231,7 @@ public class BarnacleApp extends android.app.Application {
             } else if (err == ERROR_SUPPLICANT) {
                 statusActivity.showDialog(StatusActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
-                statusActivity.getTabHost().setCurrentTab(0); // show log
+//                statusActivity.getTabHost().setCurrentTab(0); // show log
                 statusActivity.showDialog(StatusActivity.DLG_ERROR);
             }
         }

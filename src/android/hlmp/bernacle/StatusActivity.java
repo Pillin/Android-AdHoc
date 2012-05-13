@@ -18,8 +18,7 @@
 
 package android.hlmp.bernacle;
 
-import java.text.NumberFormat;
-
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.DialogInterface;
@@ -30,32 +29,19 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.widget.TabHost;
-import android.widget.TabHost.OnTabChangeListener;
-import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import android.hlmp.bernacle.R;
 
-public class StatusActivity extends android.app.TabActivity {
+public class StatusActivity extends Activity {
     private BarnacleApp app;
 
-    private TabHost tabs;
     private ToggleButton onoff;
-    private TextView logview;
 
     final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
     final static int DLG_SUPPLICANT = 3;
 
-    static NumberFormat nf = NumberFormat.getInstance();
-    static {
-        nf.setMaximumFractionDigits(2);
-        nf.setMinimumFractionDigits(2);
-        nf.setMinimumIntegerDigits(1);
-    }
-
-    /** Called when the activity is first created. */
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -75,19 +61,7 @@ public class StatusActivity extends android.app.TabActivity {
                 }
             }
         });
-        
-        tabs = getTabHost();
-        tabs.addTab(tabs.newTabSpec("log")
-                .setIndicator("log", getResources().getDrawable(R.drawable.ic_tab_recent))
-                .setContent(R.id.logview));
-        tabs.setOnTabChangedListener(new OnTabChangeListener() {
-            @Override
-            public void onTabChanged(String tabId) {
-                update();
-            }
-        });
 
-        logview = (TextView) findViewById(R.id.log_text);
         app.setStatusActivity(this);
     }
     @Override
@@ -172,9 +146,6 @@ public class StatusActivity extends android.app.TabActivity {
 
     void update() {
         int state = app.getState();
-
-        if (app.log != null)
-            logview.setText(app.log);
 
         if (state == BarnacleService.STATE_STOPPED) {
             onoff.setChecked(false);
