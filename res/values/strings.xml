@@ -18,10 +18,8 @@
 -->
 <resources>
 
-    <string name="app_name">OLSR Mesh Tether</string>
-    <string name="clientview">Barnacle Clients</string>
+    <string name="app_name">Android AdHoc</string>
     <string name="notify_running">Sharing your connection</string>
-    <string name="notify_client">Client connected</string>
     <string name="notify_error">Error occured</string>
     <string name="noprefs">Please, set your preferences</string>
     <string name="starting">Starting…</string>

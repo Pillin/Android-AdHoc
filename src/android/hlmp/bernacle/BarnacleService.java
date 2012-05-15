@@ -158,7 +158,9 @@ public class BarnacleService extends android.app.Service {
     // our handler
     private final Handler mHandler = new Handler() {
         @Override
-        public void handleMessage(Message msg) { handle(msg); }
+        public void handleMessage(Message msg) {
+        	handle(msg);
+        }
     };
 
     private void handle(Message msg) {
@@ -205,7 +207,15 @@ public class BarnacleService extends android.app.Service {
                 // ignore it, wait for MSG_ERROR(null)
                 break;
             }
-            log(false, line);
+            if (line.startsWith("WIFI: OK")) {
+                if (state == STATE_STARTING) {
+                    state = STATE_RUNNING;
+                    log(false, getString(R.string.running));
+                    app.processStarted();
+                }
+            } else {
+                log(false, line);
+            }
             break;
         case MSG_START:
 

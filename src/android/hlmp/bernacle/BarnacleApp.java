@@ -63,12 +63,13 @@ public class BarnacleApp extends android.app.Application {
     
     private Notification notificationError;
     final static int NOTIFY_RUNNING = 0;
-    final static int NOTIFY_ERROR = 2;
+    final static int NOTIFY_ERROR = 1;
 
     public BarnacleService service = null;
     public Util.StyledStringBuilder log = null; // == service.log, unless service is dead
 
-    private List<ScanResult> lastScanResult;
+    @SuppressWarnings("unused")
+	private List<ScanResult> lastScanResult;
     private boolean shouldDisableWifi;
 
     private BroadcastReceiver scanReceiver = new BroadcastReceiver() {
