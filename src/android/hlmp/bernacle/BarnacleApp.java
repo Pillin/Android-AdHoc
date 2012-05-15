@@ -83,6 +83,7 @@ public class BarnacleApp extends android.app.Application {
             }
         }
     };
+    
 
 
     @Override
@@ -95,10 +96,10 @@ public class BarnacleApp extends android.app.Application {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // if IP address isn't set, generate one
+        // TODO: FVALVERD esto debería ser un parametro del usuario y no determinarlo en la aplicación
         if (prefs.getString(getString(R.string.lan_gw), "").equals("")) {
         	SharedPreferences.Editor e = prefs.edit();
-//        	FVALVERD TODO: parametrizar el 170.160.X.X
+        	// TODO: FVALVERD parametrizar el 170.160.X.X
         	String myIP = "170.160." + String.valueOf((int)(Math.random() * 255)) + "." + String.valueOf((int)(Math.random() * 255));
         	e.putString(getString(R.string.lan_gw), myIP);
         	e.commit();
