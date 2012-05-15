@@ -68,7 +68,6 @@ public class BarnacleApp extends android.app.Application {
     public BarnacleService service = null;
     public Util.StyledStringBuilder log = null; // == service.log, unless service is dead
 
-    @SuppressWarnings("unused")
 	private List<ScanResult> lastScanResult;
     private boolean shouldDisableWifi;
 
