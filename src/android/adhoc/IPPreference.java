@@ -31,26 +31,23 @@ import android.widget.Toast;
 * EditTextPreference that allows IP addresses only
 */
 public class IPPreference extends EditTextPreference {
-    public IPPreference(Context context, AttributeSet attrs, int defStyle) { super(context, attrs, defStyle); }
-    public IPPreference(Context context, AttributeSet attrs) { super(context, attrs); }
-    public IPPreference(Context context) { super(context); }
+	
+    public IPPreference(Context context, AttributeSet attrs, int defStyle) {
+    	super(context, attrs, defStyle);
+    }
+    
+    public IPPreference(Context context, AttributeSet attrs) {
+    	super(context, attrs);
+    }
+    
+    public IPPreference(Context context) {
+    	super(context);
+    }
 
     @Override
     protected void onAddEditTextToDialogView(View dialogView, EditText editText) {
         editText.setKeyListener(DigitsKeyListener.getInstance("0123456789."));
         super.onAddEditTextToDialogView(dialogView, editText);
-    }
-
-    public static boolean validate(String addr) {
-        try {
-            //if(addr.length() == 0) // don't want empty address
-            //	return false;
-            if(java.net.InetAddress.getByName(addr) == null)
-                return false;
-        } catch (java.net.UnknownHostException e) {
-            return false;
-        }
-        return true;
     }
 
     @Override
@@ -66,5 +63,17 @@ public class IPPreference extends EditTextPreference {
             }
         }
         super.onDialogClosed(positiveResult);
+    }
+
+    public static boolean validate(String addr) {
+        try {
+            //if(addr.length() == 0) // don't want empty address
+            //	return false;
+            if(java.net.InetAddress.getByName(addr) == null)
+                return false;
+        } catch (java.net.UnknownHostException e) {
+            return false;
+        }
+        return true;
     }
 }

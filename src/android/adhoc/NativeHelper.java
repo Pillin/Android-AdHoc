@@ -12,22 +12,31 @@ import android.content.Context;
 import android.content.res.AssetManager;
 import android.util.Log;
 
+
 public class NativeHelper {
+	
 	public static final String TAG = "NativeHelper";
-
+	
 	public static File app_bin;
-	public static File app_log;
-
-    static String SU_C;
+	
+	static String missedFileFormat;
+	static String SU_C;
     static String RUN;
     static String WIFI;
 
-	public static void setup(Context context) {
+	private static File SU_C_FILE;
+	private static File RUN_FILE;
+	private static File WIFI_FILE;
+
+	public static void setup(Context context, String format) {
+		missedFileFormat = format;
 		app_bin = context.getDir("bin", Context.MODE_PRIVATE).getAbsoluteFile();
-		app_log = context.getDir("log", Context.MODE_PRIVATE).getAbsoluteFile();
-		SU_C = new File(app_bin, "su_c").getAbsolutePath();
-		RUN = new File(app_bin, "run").getAbsolutePath();
-		WIFI = new File(app_bin, "wifi").getAbsolutePath();
+		SU_C_FILE = new File(app_bin, "su_c");
+		SU_C = SU_C_FILE.getAbsolutePath();
+		RUN_FILE = new File(app_bin, "run");
+		RUN = RUN_FILE.getAbsolutePath();
+		WIFI_FILE = new File(app_bin, "wifi");
+		WIFI = WIFI_FILE.getAbsolutePath();
 	}
 
 	public static boolean unzipAssets(Context context) {
@@ -37,9 +46,9 @@ public class NativeHelper {
 			final String[] assetList = am.list("");
 
 			for (String asset : assetList) {
-				if (asset.equals("images") || asset.equals("sounds")
-						|| asset.equals("webkit"))
+				if (asset.equals("images") || asset.equals("sounds") || asset.equals("webkit")) {
 					continue;
+				}
 
 				int BUFFER = 2048;
 				final File file = new File(NativeHelper.app_bin, asset);
@@ -99,5 +108,27 @@ public class NativeHelper {
 		} catch (NoSuchMethodException e) {
 			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		}
+	}
+
+	
+	public static boolean existAssets(AdHocService adHocService) {
+		boolean state = true;
+		if (!app_bin.exists()) {
+			Log.e(TAG, String.format(missedFileFormat, app_bin.getAbsolutePath()));
+			state = false;
+		}
+		if (!SU_C_FILE.exists()) {
+			Log.e(TAG, String.format(missedFileFormat, SU_C));
+			state = false;
+		}
+		if (!RUN_FILE.exists()) {
+			Log.e(TAG, String.format(missedFileFormat, RUN));
+			state = false;
+		}
+		if (!WIFI_FILE.exists()) {
+			Log.e(TAG, String.format(missedFileFormat, WIFI));
+			state = false;
+		}
+		return state;
 	}
 }

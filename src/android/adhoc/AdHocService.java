@@ -239,9 +239,9 @@ public class AdHocService extends android.app.Service {
         	String startingFormat = getString(R.string.starting);
             Log.d(TAG, String.format(startingFormat, this.getClass().getSimpleName()));
 
-            // TODO: FVALVERD hacer esto solo para nuevas versiones de los archivos
-            if (!NativeHelper.unzipAssets(this)) {
-                Log.e(TAG, getString(R.string.unpackerr));
+            if (!NativeHelper.existAssets(this)) {
+            	String format = getString(R.string.assetsProblem);
+                Log.e(TAG, String.format(format, this.getClass().getSimpleName()));
                 state = STATE_STOPPED;
                 break;
             }
@@ -253,7 +253,7 @@ public class AdHocService extends android.app.Service {
             String formatedString = String.format(formatString, wifiState, state, proccesID); 
             Log.w(TAG, formatedString);
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
-                // wifi is good (or lost), we can start now...
+                // wifi is good (or lost)
             	if ((state == STATE_STARTING) && (process == null)) {
             		if (!startProcess()) {
                         Log.e(TAG, getString(R.string.starterr));

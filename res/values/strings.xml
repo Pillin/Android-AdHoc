@@ -36,6 +36,8 @@
     <string name="restartneeded">Restart for changes to take effect</string>
     <string name="destroyWhileRunning">Service destroyed while running!</string>
     <string name="notifyingError">Notifying error</string>
+    <string formatted="false" name="missedAssetsFiles">Missed %s assets file</string>
+    <string formatted="false" name="assetsProblem">Check assets files. %s STOP!</string>
     <string formatted="false" name="creating">%s Creating…</string>
     <string formatted="false" name="created">%s Created!</string>
     <string formatted="false" name="starting">%s Starting…</string>

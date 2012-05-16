@@ -37,6 +37,7 @@ public class AdHocActivity extends Activity {
 	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
     final static int DLG_SUPPLICANT = 3;
+    final static int DLG_ASSETS = 4;
 	
 	private AdHocApp app;
     private ToggleButton onoff;
@@ -95,7 +96,7 @@ public class AdHocActivity extends Activity {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Root Access")
-                .setMessage("Barnacle requires 'su' to access the hardware! Please, make sure you have root access.")
+                .setMessage("AdHoc requires 'su' to access the hardware! Please, make sure you have root access.")
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -111,11 +112,31 @@ public class AdHocActivity extends Activity {
                  })
                 .create();
         }
-        if (id == DLG_SUPPLICANT) {
+        else if (id == DLG_ERROR) {
+            return (new AlertDialog.Builder(this))
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Error")
+                .setMessage("Unexpected error occured! Check the troubleshooting guide for the error printed in the log tab.")
+                .setPositiveButton("Help", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        Uri uri = Uri.parse(getString(R.string.fixUrl));
+                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
+                    }
+                })
+                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    	removeDialog(DLG_ERROR);
+                    }
+                })
+                .create();
+        }
+        else if (id == DLG_SUPPLICANT) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Supplicant not available")
-                .setMessage("Barnacle had trouble starting wpa_supplicant. Try again but set 'Skip wpa_supplicant' in settings.")
+                .setMessage("AdHoc had trouble starting wpa_supplicant. Try again but set 'Skip wpa_supplicant' in settings.")
                 .setPositiveButton("Do it now!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -123,6 +144,19 @@ public class AdHocActivity extends Activity {
                         app.updateToast("Settings updated, try again...", true);
                     }
                 })
+                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                    	removeDialog(DLG_ROOT);
+                    }
+                })
+                .create();
+        }
+        else if (id == DLG_ASSETS) {
+            return (new AlertDialog.Builder(this))
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Assets does not exist!")
+                .setMessage("Check if AdHoc App have assets folder.")
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {

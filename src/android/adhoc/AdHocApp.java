@@ -30,9 +30,6 @@ import android.util.Log;
 import android.widget.Toast;
 
 
-/**
-* Manages preferences, activities and prepares the service
-*/
 public class AdHocApp extends android.app.Application {
     final static String TAG = "BarnacleApp";
     public static String app_name;
@@ -40,6 +37,7 @@ public class AdHocApp extends android.app.Application {
     final static int ERROR_ROOT = 1;
     final static int ERROR_OTHER = 2;
     final static int ERROR_SUPPLICANT = 3;
+    final static int ERROR_ASSETS = 4;
 
     final static int NOTIFY_RUNNING = 0;
     final static int NOTIFY_ERROR = 1;
@@ -60,7 +58,8 @@ public class AdHocApp extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         Log.d(TAG, String.format(getString(R.string.creating), this.getClass().getSimpleName()));
-        NativeHelper.setup(this);
+        NativeHelper.setup(this, getString(R.string.missedAssetsFiles));
+        
         app_name = getString(R.string.app_name);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
@@ -91,8 +90,12 @@ public class AdHocApp extends android.app.Application {
         if (previousWifiState = wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(false);
         }
-        
         Log.d(TAG, String.format(getString(R.string.created), this.getClass().getSimpleName()));
+        
+        if (!NativeHelper.unzipAssets(this)) {
+            Log.e(TAG, getString(R.string.unpackerr));
+           this.failed(ERROR_ASSETS);
+        }
     }
 
     @Override
@@ -103,18 +106,21 @@ public class AdHocApp extends android.app.Application {
         }
         super.onTerminate();
     }
+    
 
     public void startService() {
         if (service == null) {
             startService(new Intent(this, AdHocService.class));
         }
     }
+    
 
     public void stopService() {
         if (service != null) {
             service.stopRequest();
         }
     }
+    
 
     public int getState() {
     	int state = AdHocService.STATE_STOPPED;
@@ -123,31 +129,37 @@ public class AdHocApp extends android.app.Application {
         }
         return state;
     }
+    
 
     public boolean isRunning() {
         return getState() == AdHocService.STATE_RUNNING;
     }
     
+    
     void setStatusActivity(AdHocActivity sa) {
         statusActivity = sa;
     }
+    
     
     void serviceStarted(AdHocService service) {
         this.service = service;
         service.startRequest();
     }
+    
 
     void updateStatus() {
         if (statusActivity != null) {
             statusActivity.update();
         }
     }
+    
 
     void updateToast(String msg, boolean islong) {
         toast.setText(msg);
         toast.setDuration(islong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
         toast.show();
     }
+    
 
     void processStarted() {
     	Intent ni = new Intent(this, AdHocActivity.class);
@@ -158,6 +170,7 @@ public class AdHocApp extends android.app.Application {
         service.startForegroundCompat(NOTIFY_RUNNING, notification);
         Log.d(TAG, getString(R.string.adhocStarted));
     }
+    
 
     void processStopped() {
     	notificationManager.cancel(NOTIFY_RUNNING);
@@ -171,6 +184,7 @@ public class AdHocApp extends android.app.Application {
             wifiManager.setWifiEnabled(true);
         }
     }
+    
 
     void failed(int err) {
         if (statusActivity != null) {
@@ -180,6 +194,8 @@ public class AdHocApp extends android.app.Application {
                 statusActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
                 statusActivity.showDialog(AdHocActivity.DLG_ERROR);
+            } else if (err == ERROR_ASSETS) {
+            	statusActivity.showDialog(AdHocActivity.DLG_ASSETS);
             }
         }
         if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
@@ -187,6 +203,7 @@ public class AdHocApp extends android.app.Application {
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
     }
+    
 
     void cleanUpNotifications() {
         if ((service != null) && (service.getState() == AdHocService.STATE_STOPPED)) {
@@ -194,4 +211,3 @@ public class AdHocApp extends android.app.Application {
         }
     }
 }
-
