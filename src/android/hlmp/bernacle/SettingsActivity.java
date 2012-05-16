@@ -68,15 +68,15 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
     @Override
     public boolean onPreferenceChange(Preference pref, Object newValue) {
         String key = pref.getKey();
-        if (key == null) return true;
-
+        if (key == null) {
+        	return true;
+        }
         if (((BarnacleApp)getApplication()).isRunning()) {
             Toast.makeText(this, getString(R.string.restartneeded), Toast.LENGTH_SHORT).show();
         }
-
         if (ListPreference.class.isInstance(pref) || EditTextPreference.class.isInstance(pref)) {
             setSummary(pref, (String)newValue);
-        } // else don't update summary
+        }
         return true;
     }
 }

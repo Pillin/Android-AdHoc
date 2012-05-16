@@ -33,7 +33,7 @@ import android.widget.ToggleButton;
 
 import android.hlmp.bernacle.R;
 
-public class StatusActivity extends Activity {
+public class MainActivity extends Activity {
 	
 	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
@@ -183,8 +183,7 @@ public class StatusActivity extends Activity {
         }
 
         if (state != BarnacleService.STATE_RUNNING) {
-            // this is unexpected, but don't fail
-            return;
+        	return;
         }
 
         // STATE_RUNNING

@@ -19,17 +19,13 @@
 package android.hlmp.bernacle;
 
 import java.util.ArrayList;
-import java.util.List;
 
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
-import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -52,12 +48,11 @@ public class BarnacleApp extends android.app.Application {
     final static int ERROR_SUPPLICANT = 3;
 
     SharedPreferences prefs;
-    private StatusActivity  statusActivity = null;
+    private MainActivity  statusActivity = null;
     private Toast toast;
 
     private WifiManager wifiManager;
 
-    // notifications
     private NotificationManager notificationManager;
     private Notification notification;
     
@@ -66,33 +61,16 @@ public class BarnacleApp extends android.app.Application {
     final static int NOTIFY_ERROR = 1;
 
     public BarnacleService service = null;
-    public Util.StyledStringBuilder log = null; // == service.log, unless service is dead
+    public Util.StyledStringBuilder log = null;
 
-	private List<ScanResult> lastScanResult;
     private boolean shouldDisableWifi;
-
-    private BroadcastReceiver scanReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            if (WifiManager.SCAN_RESULTS_AVAILABLE_ACTION.equals(intent.getAction())) {
-                scanResultsAvailable(wifiManager.getScanResults());
-                if (shouldDisableWifi) {
-                    wifiManager.setWifiEnabled(false);
-                } // else stop disabling it
-                shouldDisableWifi = false;
-            }
-        }
-    };
-    
-
+  
 
     @Override
     public void onCreate() {
         super.onCreate();
-        Log.d(TAG, "onCreate");
         NativeHelper.setup(this);
 
-        // initialize default values if not done this in the past
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -115,16 +93,16 @@ public class BarnacleApp extends android.app.Application {
         notificationError.setLatestEventInfo(this,
                 getString(R.string.app_name),
                 getString(R.string.notify_error),
-                PendingIntent.getActivity(this, 0, new Intent(this, StatusActivity.class), 0));
+                PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0));
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
 
-        registerReceiver(scanReceiver, new IntentFilter(WifiManager.SCAN_RESULTS_AVAILABLE_ACTION));
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
         if (!wifiManager.isWifiEnabled()) {
             wifiManager.setWifiEnabled(true);
             shouldDisableWifi = true;
         }
         wifiManager.startScan();
+        Log.d(TAG, this.getClass().getSimpleName() + " Created!");
     }
 
     @Override
@@ -133,32 +111,30 @@ public class BarnacleApp extends android.app.Application {
             Log.e(TAG, "The app is terminated while the service is running!");
             service.stopRequest();
         }
-        // clean up after yourself
         if (shouldDisableWifi) {
             wifiManager.setWifiEnabled(false);
-        }
-        try {
-            unregisterReceiver(scanReceiver);
-        } catch (Exception e) {
-            // ignore IntentReceiverLeaked
         }
         super.onTerminate();
     }
 
     public void startService() {
-        if (service == null)
+        if (service == null) {
             startService(new Intent(this, BarnacleService.class));
+        }
     }
 
     public void stopService() {
-        if (service != null)
+        if (service != null) {
             service.stopRequest();
+        }
     }
 
     public int getState() {
-        if (service != null)
-            return service.getState();
-        return BarnacleService.STATE_STOPPED;
+    	int state = BarnacleService.STATE_STOPPED;
+        if (service != null) {
+        	state = service.getState();
+        }
+        return state;
     }
 
     public boolean isChanging() {
@@ -173,28 +149,21 @@ public class BarnacleApp extends android.app.Application {
         return getState() == BarnacleService.STATE_STOPPED;
     }
 
-    void setStatusActivity(StatusActivity sa) { // for updates
+    void setStatusActivity(MainActivity sa) {
         statusActivity = sa;
     }
     
     void serviceStarted(BarnacleService s) {
-        Log.w(TAG, "serviceStarted");
+        Log.d(TAG, s.getClass().getSimpleName() + " Started!");
         service = s;
         log = service.log;
         service.startRequest();
     }
 
-    static void broadcastState(Context ctx, int state) {
-        Intent intent = new Intent(ACTION_CHANGED);
-        intent.putExtra("state", state);
-        ctx.sendBroadcast(intent, "net.szym.barnacle.ACCESS_STATE");
-    }
-
     void updateStatus() {
-        if (statusActivity != null)
+        if (statusActivity != null) {
             statusActivity.update();
-        // TODO: only broadcast state if changed or stale
-        broadcastState(this, getState());
+        }
     }
 
     void updateToast(String msg, boolean islong) {
@@ -203,13 +172,9 @@ public class BarnacleApp extends android.app.Application {
         toast.show();
     }
 
-    private void scanResultsAvailable(List<ScanResult> result) {
-        lastScanResult = result;
-    }
-
     void processStarted() {
-        Log.w(TAG, "processStarted");
-        Intent notificationIntent = new Intent(this, StatusActivity.class);
+        Log.d(TAG, "Process Started");
+        Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(this, getString(R.string.app_name),
                         getString(R.string.notify_running), contentIntent);
@@ -218,7 +183,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStopped() {
-        Log.w(TAG, "processStopped");
+        Log.i(TAG, "processStopped");
         notificationManager.cancel(NOTIFY_RUNNING);
         if (service != null) service.stopSelf();
         service = null;
@@ -228,12 +193,11 @@ public class BarnacleApp extends android.app.Application {
     void failed(int err) {
         if (statusActivity != null) {
             if (err == ERROR_ROOT) {
-                statusActivity.showDialog(StatusActivity.DLG_ROOT);
+                statusActivity.showDialog(MainActivity.DLG_ROOT);
             } else if (err == ERROR_SUPPLICANT) {
-                statusActivity.showDialog(StatusActivity.DLG_SUPPLICANT);
+                statusActivity.showDialog(MainActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
-//                statusActivity.getTabHost().setCurrentTab(0); // show log
-                statusActivity.showDialog(StatusActivity.DLG_ERROR);
+                statusActivity.showDialog(MainActivity.DLG_ERROR);
             }
         }
         if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
@@ -242,7 +206,9 @@ public class BarnacleApp extends android.app.Application {
         }
     }
 
-    /** find default route interface */
+    /**
+     * Find default route interface
+     **/
     protected boolean findIfWan() {
         String if_wan = prefs.getString(getString(R.string.if_wan), "");
         if (if_wan.length() != 0) return true;
@@ -278,8 +244,9 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void cleanUpNotifications() {
-        if ((service != null) && (service.getState() == BarnacleService.STATE_STOPPED))
+        if ((service != null) && (service.getState() == BarnacleService.STATE_STOPPED)) {
             processStopped(); // clean up notifications
+        }
     }
 }
 

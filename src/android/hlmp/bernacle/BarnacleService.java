@@ -56,11 +56,11 @@ public class BarnacleService extends android.app.Service {
     // app states
     public final static int STATE_STOPPED  = 0;
     public final static int STATE_STARTING = 1;
-    public final static int STATE_RUNNING  = 2; // process said OK
+    public final static int STATE_RUNNING  = 2;
 
     // private state
     private int state = STATE_STOPPED;
-    private Process process = null; // the barnacle process
+    private Process process = null;
     // output monitoring threads
     private Thread[] threads = new Thread[2];
     private PowerManager.WakeLock wakeLock;
@@ -75,7 +75,7 @@ public class BarnacleService extends android.app.Service {
     public final Util.StyledStringBuilder log = new Util.StyledStringBuilder();
 
     final static int COLOR_ERROR    = 0xffff2222;
-    final static int COLOR_LOG      = 0xff888888;//android.R.color.primary_text_dark;
+    final static int COLOR_LOG      = 0xff888888;
     final static int COLOR_TIME     = 0xffffffff;
 
     // WARNING: this is not entirely safe
@@ -87,22 +87,37 @@ public class BarnacleService extends android.app.Service {
     private boolean filteringEnabled = false;
     private Method mStartForeground = null;
 
-    /** public service interface */
-    public void startRequest() {
-        mHandler.sendEmptyMessage(MSG_START);
+    
+    /** 
+     * Worker Threads
+     **/
+    private class OutputMonitor implements Runnable {
+        private final java.io.BufferedReader br;
+        private final int msg;
+        public OutputMonitor(int t, java.io.InputStream is) {
+            br = Util.toReader(is);
+            msg = t;
+        }
+        public void run() {
+            try{
+                String line;
+                do {
+                    line = br.readLine();
+                    mHandler.obtainMessage(msg, line).sendToTarget(); // NOTE: the last null is also sent!
+                } while(line != null);
+            } catch (Exception e) {
+                mHandler.obtainMessage(MSG_EXCEPTION, e).sendToTarget();
+            }
+        }
     }
+  
+    private final Handler mHandler = new Handler() {
+        @Override
+        public void handleMessage(Message msg) {
+        	handle(msg);
+        }
+    };
 
-    public void stopRequest() {
-        mHandler.sendEmptyMessage(MSG_STOP);
-    }
-
-    public int getState() {
-        return state;
-    }
-
-    public boolean hasFiltering() {
-        return filteringEnabled;
-    }
 
     @Override
     public void onCreate() {
@@ -155,13 +170,29 @@ public class BarnacleService extends android.app.Service {
         super.onDestroy();
     }
 
-    // our handler
-    private final Handler mHandler = new Handler() {
-        @Override
-        public void handleMessage(Message msg) {
-        	handle(msg);
-        }
-    };
+    @Override
+    public IBinder onBind(Intent intent) {
+        return null;
+    }
+    
+    /**
+     * Public service interface for Start
+     **/
+    public void startRequest() {
+        mHandler.sendEmptyMessage(MSG_START);
+    }
+
+    public void stopRequest() {
+        mHandler.sendEmptyMessage(MSG_STOP);
+    }
+
+    public int getState() {
+        return state;
+    }
+
+    public boolean hasFiltering() {
+        return filteringEnabled;
+    }
 
     private void handle(Message msg) {
         switch (msg.what) {
@@ -200,40 +231,42 @@ public class BarnacleService extends android.app.Service {
             }
             break;
         case MSG_OUTPUT:
-            if (state == STATE_STOPPED) return;
-            if (process == null) return; // cut the gibberish
+            if (state == STATE_STOPPED || process == null){
+            	return;
+            }
             String line = (String)msg.obj;
             if (line == null) {
-                // ignore it, wait for MSG_ERROR(null)
-                break;
+                break; // ignore it, wait for MSG_ERROR(null)
             }
-            if (line.startsWith("WIFI: OK")) {
+            else if (line.startsWith("WIFI: OK")) {
                 if (state == STATE_STARTING) {
                     state = STATE_RUNNING;
+                    log(false, getString(R.string.starting) + " OK!");
                     log(false, getString(R.string.running));
                     app.processStarted();
                 }
-            } else {
+            }
+            else {
                 log(false, line);
             }
             break;
         case MSG_START:
-
-            if (state != STATE_STOPPED) return;
+        	if (state != STATE_STOPPED) {
+        		return;
+        	}
             log.clear();
             log(false, getString(R.string.starting));
 
-            // TODO make this only overwrite on upgrade to new version
+            // TODO: FVALVERD hacer esto solo para nuevas versiones de los archivos
             if (!NativeHelper.unzipAssets(this)) {
                 log(true, getString(R.string.unpackerr));
                 state = STATE_STOPPED;
                 break;
             }
             state = STATE_STARTING;
-            // FALL THROUGH!
         case MSG_NETSCHANGE:
             int wifiState = wifiManager.getWifiState();
-            Log.e(TAG, String.format("NETSCHANGE: %d %d %s", wifiState, state, process == null ? "null" : "proc"));
+            Log.w(TAG, String.format("NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s", wifiState, state, process == null ? "null" : "notNull"));
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
                 // wifi is good (or lost), we can start now...
             	if ((state == STATE_STARTING) && (process == null)) {
@@ -287,50 +320,26 @@ public class BarnacleService extends android.app.Service {
     protected void log(boolean error, String msg) {
         android.text.format.Time time = new android.text.format.Time();
         time.setToNow();
-        Log.i(TAG, "log: " + msg);
-        log.append(COLOR_TIME, time.format("%H:%M:%S\t"))
-          .append(error ? COLOR_ERROR : COLOR_LOG, msg)
-          .append("\n");
+        if (error) {
+        	Log.e(TAG, msg);	
+        }
+        else {
+        	Log.i(TAG, msg);
+        }
+        
     }
 
-    /** Worker Threads */
-    private class OutputMonitor implements Runnable {
-        private final java.io.BufferedReader br;
-        private final int msg;
-        public OutputMonitor(int t, java.io.InputStream is) {
-            br = Util.toReader(is);
-            msg = t;
-        }
-        public void run() {
-            try{
-                String line;
-                do {
-                    line = br.readLine();
-                    mHandler.obtainMessage(msg, line).sendToTarget(); // NOTE: the last null is also sent!
-                } while(line != null);
-            } catch (Exception e) {
-                mHandler.obtainMessage(MSG_EXCEPTION, e).sendToTarget();
-            }
-        }
-    }
-
-    /** Prepare env vars for ./wifi from preferences */
-    protected String[] buildEnvFromPrefs() {
+    /**
+     * Prepare env vars for wifi script from app preferences
+     **/
+    protected String[] getEnvironmentFromPrefs() {
     	ArrayList<String> envlist = new ArrayList<String>();
 
-    	// get the existing environment first, since many programs like 'su' require 
-    	// env vars like LD_LIBRARY_PATH to be set
     	Map<String, String> env = System.getenv();
     	for (String envName : env.keySet()) {
-    		if (envName.equals("LD_LIBRARY_PATH")) {
-    			// set LD_LIBRARY_PATH to load olsrd plugins
-    			envlist.add(envName + "=" + NativeHelper.app_bin.getAbsolutePath() + ":" + env.get(envName));    			
-    		} else {
-    			envlist.add(envName + "=" + env.get(envName));
-    		}
+    		envlist.add(envName + "=" + env.get(envName));
     	}
 
-    	// initialize default values if not done this in the past
     	PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
     	SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -340,9 +349,6 @@ public class BarnacleService extends android.app.Service {
     		String v = prefs.getString(k, null);
     		if (v != null && v.length() != 0) {
     			// TODO some chars need to be escaped, but this seems to add "" to the ESSID name
-//    			if (ids[i] == R.string.lan_essid) {
-//    				v = '"'+v+'"';
-//    			}
     			envlist.add("brncl_" + k + "=" + v);
     		}
     	}
@@ -357,17 +363,16 @@ public class BarnacleService extends android.app.Service {
 
     	String[] ret = (String[]) envlist.toArray(new String[0]);
     	for (String s : ret) {
-    		Log.i(TAG, "env var: " + s);
+    		Log.i(TAG, "set env: " + s);
     	}
     	return ret;
     }
 
     private boolean startProcess() {
-    	// calling 'su -c' from Java doesn't work so we use a helper script
     	String cmd = NativeHelper.SU_C;
         try {
-            process = Runtime.getRuntime().exec(cmd,
-            		buildEnvFromPrefs(), NativeHelper.app_bin);
+        	Runtime runtime = Runtime.getRuntime();
+            process = runtime.exec(cmd, getEnvironmentFromPrefs(), NativeHelper.app_bin);
             threads[0] = new Thread(new OutputMonitor(MSG_OUTPUT, process.getInputStream()));
             threads[1] = new Thread(new OutputMonitor(MSG_ERROR, process.getErrorStream()));
             threads[0].start();
@@ -408,11 +413,6 @@ public class BarnacleService extends android.app.Service {
             threads[0].interrupt();
             threads[1].interrupt();
         }
-    }
-
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
     }
 
     /**

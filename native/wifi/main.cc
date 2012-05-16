@@ -55,7 +55,7 @@ int assoc_loop () {
   static const size_t BufSize = 64;
 
   char  iflan[IFNAMSIZ];
-  char  essid[BufSize+1] = "HLMP-MANET";
+  char  essid[BufSize+1] = "ADHOC";
   char  bssid[BufSize+1] = { '\0' };
   char  wep[BufSize+1] = { '\0' };
   unsigned channel = 7;

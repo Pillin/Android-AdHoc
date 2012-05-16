@@ -47,8 +47,7 @@ public class NativeHelper {
 
 				if (file.exists()) {
 					file.delete();
-					Log.i(BarnacleApp.TAG, "DebiHelper.unzipDebiFiles() deleting "
-							+ file.getAbsolutePath());
+					Log.i(TAG, "rm " + file.getAbsolutePath());
 				}
 
 				FileOutputStream fos = new FileOutputStream(file);
