@@ -84,14 +84,14 @@ public class AdHocService extends android.app.Service {
             }
         }
     }
-  
+
+    
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
         	handle(msg);
         }
     };
-
     
     private BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
@@ -99,9 +99,8 @@ public class AdHocService extends android.app.Service {
             mHandler.sendEmptyMessage(MSG_NETSCHANGE);
         }
     };
-    
 
-    
+
     @Override
     public void onCreate() {
     	super.onCreate();
