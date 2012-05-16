@@ -55,6 +55,8 @@
     <string name="lan_channel">lan_channel</string>
     <string name="lan_wext">lan_wext</string>
     <string name="lan_script">lan_script</string>
+    
+    <string formatted="false" name="ipFormat">170.160.%d.%d</string>
 
     <string-array name="channel_values">
         <item>1</item>

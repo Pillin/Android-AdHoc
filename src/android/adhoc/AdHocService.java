@@ -63,11 +63,13 @@ public class AdHocService extends android.app.Service {
  // WARNING: this is not entirely safe
     public static AdHocService singleton = null;
    
+    
     private class OutputMonitor implements Runnable {
+    	final private int bufferedSize = 8192;
         private final java.io.BufferedReader br;
         private final int msg;
         public OutputMonitor(int msgType, java.io.InputStream is) {
-            br = Util.toReader(is);
+            br = new java.io.BufferedReader(new java.io.InputStreamReader(is), bufferedSize);
             msg = msgType;
         }
         public void run() {
@@ -99,8 +101,6 @@ public class AdHocService extends android.app.Service {
     };
     
 
-    
-    
     
     @Override
     public void onCreate() {

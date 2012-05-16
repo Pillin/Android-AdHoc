@@ -31,7 +31,7 @@ import android.widget.Toast;
 
 
 public class AdHocApp extends android.app.Application {
-    final static String TAG = "BarnacleApp";
+    final static String TAG = "AdHocApp";
     public static String app_name;
     
     final static int ERROR_ROOT = 1;
@@ -64,16 +64,6 @@ public class AdHocApp extends android.app.Application {
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        // TODO: FVALVERD esto debería ser un parametro del usuario y no determinarlo en la aplicación
-        if (prefs.getString(getString(R.string.lan_gw), "").equals("")) {
-        	SharedPreferences.Editor e = prefs.edit();
-        	// TODO: FVALVERD parametrizar el 170.160.X.X
-        	String myIP = "170.160." + String.valueOf((int)(Math.random() * 255)) + "." + String.valueOf((int)(Math.random() * 255));
-        	e.putString(getString(R.string.lan_gw), myIP);
-        	e.commit();
-        	Log.i(TAG, "Generated IP: " + myIP);
-        }
-        
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         
@@ -109,13 +99,23 @@ public class AdHocApp extends android.app.Application {
     
 
     public void startService() {
+    	this.pickUpNewIP();
         if (service == null) {
             startService(new Intent(this, AdHocService.class));
         }
     }
     
 
-    public void stopService() {
+    private void pickUpNewIP() {
+    	SharedPreferences.Editor e = prefs.edit();
+    	String ipFormat = getString(R.string.ipFormat);
+    	ipFormat = String.format(ipFormat, (int)(Math.random()*255), (int)(Math.random()*255));
+    	e.putString(getString(R.string.lan_gw), ipFormat);
+    	e.commit();
+    	Log.i(TAG, "Generated IP: " + ipFormat);
+	}
+
+	public void stopService() {
         if (service != null) {
             service.stopRequest();
         }
