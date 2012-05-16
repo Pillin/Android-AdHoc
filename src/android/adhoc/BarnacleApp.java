@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package android.hlmp.bernacle;
+package android.adhoc;
 
 import java.util.ArrayList;
 
@@ -31,7 +31,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-import android.hlmp.bernacle.R;
 
 /**
 * Manages preferences, activities and prepares the service
@@ -48,7 +47,7 @@ public class BarnacleApp extends android.app.Application {
     final static int ERROR_SUPPLICANT = 3;
 
     SharedPreferences prefs;
-    private MainActivity  statusActivity = null;
+    private MainActivity statusActivity = null;
     private Toast toast;
 
     private WifiManager wifiManager;
@@ -61,7 +60,6 @@ public class BarnacleApp extends android.app.Application {
     final static int NOTIFY_ERROR = 1;
 
     public BarnacleService service = null;
-    public Util.StyledStringBuilder log = null;
 
     private boolean shouldDisableWifi;
   
@@ -153,10 +151,8 @@ public class BarnacleApp extends android.app.Application {
         statusActivity = sa;
     }
     
-    void serviceStarted(BarnacleService s) {
-        Log.d(TAG, s.getClass().getSimpleName() + " Started!");
-        service = s;
-        log = service.log;
+    void serviceStarted(BarnacleService service) {
+        this.service = service;
         service.startRequest();
     }
 
@@ -173,7 +169,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStarted() {
-        Log.d(TAG, "Process Started");
+        Log.d(TAG, "Wireless ADHOC Started!");
         Intent notificationIntent = new Intent(this, MainActivity.class);
         PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
         notification.setLatestEventInfo(this, getString(R.string.app_name),
@@ -183,9 +179,11 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStopped() {
-        Log.i(TAG, "processStopped");
+        Log.d(TAG, "Wireless ADHOC Stoped!");
         notificationManager.cancel(NOTIFY_RUNNING);
-        if (service != null) service.stopSelf();
+        if (service != null) {
+        	service.stopSelf();
+        }
         service = null;
         updateStatus();
     }
@@ -201,7 +199,8 @@ public class BarnacleApp extends android.app.Application {
             }
         }
         if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
-            Log.d(TAG, "notifying error");
+//        	TODO: FVALVERDE pasar el texto a string.xml
+            Log.d(TAG, "Notifying error");
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
     }

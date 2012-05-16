@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package android.hlmp.bernacle;
+package android.adhoc;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -31,7 +31,6 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.ToggleButton;
 
-import android.hlmp.bernacle.R;
 
 public class MainActivity extends Activity {
 	
@@ -110,26 +109,6 @@ public class MainActivity extends Activity {
                     	removeDialog(DLG_ROOT);
                     }
                  })
-                .create();
-        }
-        if (id == DLG_ERROR) {
-            return (new AlertDialog.Builder(this))
-                .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Error")
-                .setMessage("Unexpected error occured! Check the troubleshooting guide for the error printed in the log tab.")
-                .setPositiveButton("Help", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Uri uri = Uri.parse(getString(R.string.fixUrl));
-                        startActivity(new Intent(Intent.ACTION_VIEW, uri));
-                    }
-                })
-                .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                    	removeDialog(DLG_ERROR);
-                    }
-                })
                 .create();
         }
         if (id == DLG_SUPPLICANT) {

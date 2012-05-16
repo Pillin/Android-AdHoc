@@ -16,7 +16,7 @@
 *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-package android.hlmp.bernacle;
+package android.adhoc;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -36,8 +36,6 @@ import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-
-import android.hlmp.bernacle.R;
 
 /**
 * Manages the running process, client list, and log
@@ -70,13 +68,6 @@ public class BarnacleService extends android.app.Service {
             mHandler.sendEmptyMessage(MSG_NETSCHANGE);
         }
     };
-
-    // public state
-    public final Util.StyledStringBuilder log = new Util.StyledStringBuilder();
-
-    final static int COLOR_ERROR    = 0xffff2222;
-    final static int COLOR_LOG      = 0xff888888;
-    final static int COLOR_TIME     = 0xffffffff;
 
     // WARNING: this is not entirely safe
     public static BarnacleService singleton = null;
@@ -148,12 +139,17 @@ public class BarnacleService extends android.app.Service {
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(connectivityReceiver, filter);
+        
+//      TODO: FVALVERD pasar el texto a string.xml  
+        Log.d(TAG, this.getClass().getSimpleName() + " Created!");
     }
 
     @Override
     public void onDestroy() {
-        if (state != STATE_STOPPED)
-            Log.e(TAG, "service destroyed while running!");
+        if (state != STATE_STOPPED) {
+//        	TODO: FVALVERD pasar el texto a string.xml
+        	Log.e(TAG, "service destroyed while running!");
+        }
         // ensure we clean up
         stopProcess();
         state = STATE_STOPPED;
@@ -199,35 +195,39 @@ public class BarnacleService extends android.app.Service {
         case MSG_EXCEPTION:
             if (state == STATE_STOPPED) return;
             Throwable thr = (Throwable)msg.obj;
-            log(true, getString(R.string.exception) + " " + thr.getMessage());
-            Log.e(TAG, "Exception " + thr.getMessage() + " " + Log.getStackTraceString(thr));
+            thr.printStackTrace();
+            Log.e(TAG, "EXCEPTION: " + thr.getMessage() + " " + Log.getStackTraceString(thr));
             stopProcess();
             state = STATE_STOPPED;
             break;
         case MSG_ERROR:
-            if (state == STATE_STOPPED) return;
-            if (process == null) return; // don't kill it again...
+            if (state == STATE_STOPPED) {
+            	return;
+            }
+            if (process == null) {
+            	return;
+            }
             if (msg.obj != null) {
                 String line = (String)msg.obj;
-                log(true, line); // just dump it and ignore it
-            } else {
-                // no message, means process died
-                log(true, getString(R.string.unexpected));
-                stopProcess();
-
+                Log.e(TAG, "ERROR: " + line);
                 if ((state == STATE_STARTING)) {
-                    String err = log.toString();
-                    if (isRootError(err)) {
+                    if (isRootError(line)) {
                         app.failed(BarnacleApp.ERROR_ROOT);
-                    } else if (isSupplicantError(err)) {
+                    }
+                    else if (isSupplicantError(line)) {
                         app.failed(BarnacleApp.ERROR_SUPPLICANT);
-                    } else {
+                    }
+                    else {
                         app.failed(BarnacleApp.ERROR_OTHER);
                     }
-                } else {
+                }
+                else {
                     app.failed(BarnacleApp.ERROR_OTHER);
                 }
-                state = STATE_STOPPED;
+            }
+            else {
+            	stopProcess();
+	            state = STATE_STOPPED;
             }
             break;
         case MSG_OUTPUT:
@@ -238,28 +238,28 @@ public class BarnacleService extends android.app.Service {
             if (line == null) {
                 break; // ignore it, wait for MSG_ERROR(null)
             }
-            else if (line.startsWith("WIFI: OK")) {
+            else if (isWifiOK(line)) {
                 if (state == STATE_STARTING) {
                     state = STATE_RUNNING;
-                    log(false, getString(R.string.starting) + " OK!");
-                    log(false, getString(R.string.running));
+                    String startedFormat = getString(R.string.started);
+                    Log.d(TAG, String.format(startedFormat, this.getClass().getSimpleName()));
                     app.processStarted();
                 }
             }
             else {
-                log(false, line);
+            	Log.i(TAG, line);
             }
             break;
         case MSG_START:
         	if (state != STATE_STOPPED) {
         		return;
         	}
-            log.clear();
-            log(false, getString(R.string.starting));
+        	String startingFormat = getString(R.string.starting);
+            Log.d(TAG, String.format(startingFormat, this.getClass().getSimpleName()));
 
             // TODO: FVALVERD hacer esto solo para nuevas versiones de los archivos
             if (!NativeHelper.unzipAssets(this)) {
-                log(true, getString(R.string.unpackerr));
+                Log.e(TAG, getString(R.string.unpackerr));
                 state = STATE_STOPPED;
                 break;
             }
@@ -271,36 +271,36 @@ public class BarnacleService extends android.app.Service {
                 // wifi is good (or lost), we can start now...
             	if ((state == STATE_STARTING) && (process == null)) {
             		if (app.findIfWan()) {
-            			// TODO if WAN found with checkUplink(), then setup Hna4 routing
-            			log(false, "Found active WAN interface");
+            			// TODO: FVALVERD colocar el texto en string.xml
+            			Log.d(TAG, "Found active WAN interface");
             		} else {
-                        ///log(true, getString(R.string.wanerr));
+            			// TODO: FVALVERD colocar el texto en string.xml
+                        Log.w(TAG, "No active WAN interface found");
                         //state = STATE_STOPPED;
                         //break;
-                        log(false, "no active WAN interface found");
                     }
                     if (!startProcess()) {
-                        log(true, getString(R.string.starterr));
+                        Log.e(TAG, getString(R.string.starterr));
                         state = STATE_STOPPED;
                         break;
                     }
-                } // if not checkUpLink then we simply wait...
+                }
             } else {
                 if (state == STATE_RUNNING) {
                     // this is super bad, will have to restart!
                     app.updateToast(getString(R.string.conflictwifi), true);
-                    log(true, getString(R.string.conflictwifi));
-                    log(false, getString(R.string.restarting));
-                    stopProcess(); // this tears down wifi
+                    Log.e(TAG, getString(R.string.conflictwifi));
+                    stopProcess();
+                    Log.d(TAG, getString(R.string.restarting));
                     wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
-                    // TODO: we should wait until wifi is disabled...
+                    // TODO: FVALVERD we should wait until wifi is disabled...
                     state = STATE_STARTING;
-                } else if (state == STATE_STARTING) {
-                    if ((wifiState == WifiManager.WIFI_STATE_ENABLED) ||
-                        (wifiState == WifiManager.WIFI_STATE_ENABLING)) {
+                }
+                else if (state == STATE_STARTING) {
+                    if ((wifiState == WifiManager.WIFI_STATE_ENABLED) || (wifiState == WifiManager.WIFI_STATE_ENABLING)) {
                         app.updateToast(getString(R.string.disablewifi), false);
                         wifiManager.setWifiEnabled(false);
-                        log(false, getString(R.string.waitwifi));
+                        Log.d(TAG, getString(R.string.waitwifi));
                     }
                 }
             }
@@ -308,28 +308,18 @@ public class BarnacleService extends android.app.Service {
         case MSG_STOP:
             if (state == STATE_STOPPED) return;
             stopProcess();
-            log(false, getString(R.string.stopped));
             state = STATE_STOPPED;
+            String stoppedFormat = getString(R.string.stopped);
+            Log.d(TAG, String.format(stoppedFormat, this.getClass().getSimpleName()));
             break;
         }
         app.updateStatus();
-        if (state == STATE_STOPPED)
+        if (state == STATE_STOPPED) {
             app.processStopped();
+        }
     }
 
-    protected void log(boolean error, String msg) {
-        android.text.format.Time time = new android.text.format.Time();
-        time.setToNow();
-        if (error) {
-        	Log.e(TAG, msg);	
-        }
-        else {
-        	Log.i(TAG, msg);
-        }
-        
-    }
-
-    /**
+	/**
      * Prepare env vars for wifi script from app preferences
      **/
     protected String[] getEnvironmentFromPrefs() {
@@ -378,7 +368,7 @@ public class BarnacleService extends android.app.Service {
             threads[0].start();
             threads[1].start();
         } catch (Exception e) {
-            log(true, String.format(getString(R.string.execerr), cmd));
+            Log.e(TAG, String.format(getString(R.string.execerr), cmd));
             Log.e(TAG, "start failed " + e.toString());
             return false;
         }
@@ -392,6 +382,7 @@ public class BarnacleService extends android.app.Service {
                 try {
                     process.getOutputStream().close();
                 } catch (Exception e) {
+//                  TODO: FVALVERD pasar este texto a string.xml
                     Log.w(TAG, "Exception while closing process");
                 }
             }
@@ -403,10 +394,11 @@ public class BarnacleService extends android.app.Service {
 
             try {
                 int exit_status = process.exitValue();
-                Log.i(TAG, "Process exited with status: " + exit_status);
+//                TODO: FVALVERD pasar este texto a string.xml
+                Log.i(TAG, "Command line Java Process exited with status: " + exit_status);
             } catch (IllegalThreadStateException e) {
-                // this is not good
-                log(true, getString(R.string.dirtystop));
+            	e.printStackTrace();
+                Log.e(TAG, getString(R.string.dirtystop));
             }
             process.destroy();
             process = null;
@@ -442,5 +434,9 @@ public class BarnacleService extends android.app.Service {
     public static boolean isRootError(String msg) {
         return msg.contains("ermission") || msg.contains("su: not found");
     }
+
+    public static boolean isWifiOK(String line) {
+		return line.startsWith("WIFI: OK");
+	}
 }
 
