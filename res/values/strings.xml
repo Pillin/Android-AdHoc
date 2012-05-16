@@ -18,9 +18,9 @@
 -->
 <resources>
 
-    <string name="app_name">Android AdHoc</string>
-    <string name="adhocStarted">Wireless ADHOC Started!</string>
-    <string name="adhocStoped">Wireless ADHOC Stoped!</string>
+    <string name="app_name">AdHoc</string>
+    <string name="adhocStarted">Wireless adhoc Started!</string>
+    <string name="adhocStoped">Wireless adhoc Stoped!</string>
     <string name="notify_running">Sharing your connection</string>
     <string name="notify_error">Error occured</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>
