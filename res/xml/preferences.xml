@@ -58,19 +58,5 @@
                 android:title="Netmask" />
         </PreferenceScreen>
     </PreferenceCategory>
-    <PreferenceCategory android:title="Interfaces" >
-        <EditTextPreference
-            android:defaultValue=""
-            android:hint="leave empty to autodetect"
-            android:key="@string/if_wan"
-            android:singleLine="true"
-            android:title="WAN" />
-        <EditTextPreference
-            android:defaultValue=""
-            android:hint="leave empty to autodetect"
-            android:key="@string/if_lan"
-            android:singleLine="true"
-            android:title="LAN" />
-    </PreferenceCategory>
 
 </PreferenceScreen>

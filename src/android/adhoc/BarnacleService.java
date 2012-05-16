@@ -270,16 +270,7 @@ public class BarnacleService extends android.app.Service {
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
                 // wifi is good (or lost), we can start now...
             	if ((state == STATE_STARTING) && (process == null)) {
-            		if (app.findIfWan()) {
-            			// TODO: FVALVERD colocar el texto en string.xml
-            			Log.d(TAG, "Found active WAN interface");
-            		} else {
-            			// TODO: FVALVERD colocar el texto en string.xml
-                        Log.w(TAG, "No active WAN interface found");
-                        //state = STATE_STOPPED;
-                        //break;
-                    }
-                    if (!startProcess()) {
+            		if (!startProcess()) {
                         Log.e(TAG, getString(R.string.starterr));
                         state = STATE_STOPPED;
                         break;

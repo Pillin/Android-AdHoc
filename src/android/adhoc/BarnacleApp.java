@@ -18,8 +18,6 @@
 
 package android.adhoc;
 
-import java.util.ArrayList;
-
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -37,7 +35,7 @@ import android.widget.Toast;
 */
 public class BarnacleApp extends android.app.Application {
     final static String TAG = "BarnacleApp";
-
+    
     final static String ACTION_TOGGLE = "android.hlmp.bernacle.TOGGLE_STATE";
     final static String ACTION_CHECK = "android.hlmp.bernacle.CHECK_STATE";
     final static String ACTION_CHANGED = "android.hlmp.bernacle.STATE_CHANGED";
@@ -60,6 +58,7 @@ public class BarnacleApp extends android.app.Application {
     final static int NOTIFY_ERROR = 1;
 
     public BarnacleService service = null;
+    public static String app_name;
 
     private boolean shouldDisableWifi;
   
@@ -68,7 +67,7 @@ public class BarnacleApp extends android.app.Application {
     public void onCreate() {
         super.onCreate();
         NativeHelper.setup(this);
-
+        app_name = getString(R.string.app_name);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
         prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
@@ -84,14 +83,14 @@ public class BarnacleApp extends android.app.Application {
         
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+        
         notification = new Notification(R.drawable.barnacle, getString(R.string.notify_running), 0);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
-        notificationError = new Notification(R.drawable.barnacle_error,
-                                            getString(R.string.notify_error), 0);
-        notificationError.setLatestEventInfo(this,
-                getString(R.string.app_name),
-                getString(R.string.notify_error),
-                PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0));
+        
+        String notify_error = getString(R.string.notify_error);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+        notificationError = new Notification(R.drawable.barnacle_error,notify_error, 0);
+        notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
@@ -170,10 +169,10 @@ public class BarnacleApp extends android.app.Application {
 
     void processStarted() {
         Log.d(TAG, "Wireless ADHOC Started!");
-        Intent notificationIntent = new Intent(this, MainActivity.class);
-        PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-        notification.setLatestEventInfo(this, getString(R.string.app_name),
-                        getString(R.string.notify_running), contentIntent);
+        Intent ni = new Intent(this, MainActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
+        String notify_running = getString(R.string.notify_running); 
+        notification.setLatestEventInfo(this, app_name, notify_running, pi);
         notificationManager.notify(NOTIFY_RUNNING, notification);
         service.startForegroundCompat(NOTIFY_RUNNING, notification);
     }
@@ -203,43 +202,6 @@ public class BarnacleApp extends android.app.Application {
             Log.d(TAG, "Notifying error");
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
-    }
-
-    /**
-     * Find default route interface
-     **/
-    protected boolean findIfWan() {
-        String if_wan = prefs.getString(getString(R.string.if_wan), "");
-        if (if_wan.length() != 0) return true;
-
-        // must find mobile data interface
-        ArrayList<String> routes = Util.readLinesFromFile("/proc/net/route");
-        for (int i = 1; i < routes.size(); ++i) {
-            String line = routes.get(i);
-            String[] tokens = line.split("\\s+");
-            if (tokens[1].equals("00000000")) {
-                // this is our default route
-                if_wan = tokens[0];
-                break;
-            }
-        }
-        if (if_wan.length() != 0) {
-            updateToast(getString(R.string.wanok) + if_wan, false);
-            prefs.edit().putString(getString(R.string.if_wan), if_wan).commit();
-            return true;
-        }
-        // it might be okay in local mode
-        return prefs.getBoolean("wan_nowait", false);
-    }
-
-    protected void foundIfLan(String found_if_lan) {
-        String if_lan = prefs.getString(getString(R.string.if_lan), "");
-        if (if_lan.length() == 0) {
-            updateToast(getString(R.string.lanok) + found_if_lan, false);
-        }
-        // NOTE: always use the name found by the process
-        if_lan = found_if_lan;
-        prefs.edit().putString(getString(R.string.if_lan), if_lan).commit();
     }
 
     void cleanUpNotifications() {
