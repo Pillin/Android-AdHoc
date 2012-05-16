@@ -174,11 +174,11 @@ public class BarnacleService extends android.app.Service {
     private void handle(Message msg) {
         switch (msg.what) {
         case MSG_EXCEPTION:
-            if (state == STATE_STOPPED) return;
+            if (state == STATE_STOPPED) {
+            	return;
+            }
             Throwable thr = (Throwable)msg.obj;
             thr.printStackTrace();
-//            TODO: FVALVERD pasar esto a string.xml
-            Log.e(TAG, "EXCEPTION: " + thr.getMessage() + " " + Log.getStackTraceString(thr));
             stopProcess();
             state = STATE_STOPPED;
             break;
@@ -248,7 +248,10 @@ public class BarnacleService extends android.app.Service {
             state = STATE_STARTING;
         case MSG_NETSCHANGE:
             int wifiState = wifiManager.getWifiState();
-            Log.w(TAG, String.format("NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s", wifiState, state, process == null ? "null" : "notNull"));
+            String proccesID = process == null ? "null" : "notNull";
+            String formatString = getString(R.string.netschange);
+            String formatedString = String.format(formatString, wifiState, state, proccesID); 
+            Log.w(TAG, formatedString);
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
                 // wifi is good (or lost), we can start now...
             	if ((state == STATE_STARTING) && (process == null)) {

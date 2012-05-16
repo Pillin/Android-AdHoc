@@ -21,28 +21,29 @@
     <string name="app_name">Android AdHoc</string>
     <string name="adhocStarted">Wireless ADHOC Started!</string>
     <string name="adhocStoped">Wireless ADHOC Stoped!</string>
-    <string name="creating">%s Creating…</string>
-    <string name="created">%s Created!</string>
     <string name="notify_running">Sharing your connection</string>
     <string name="notify_error">Error occured</string>
-    <string name="starting">%s Starting…</string>
-    <string name="started">%s Starting… OK!</string>
-    <string name="stopped">%s Stopped!</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>
     <string name="conflictwifi">Wifi Manager is interfering with AdHoc!</string>
     <string name="waitwifi">Waiting until Wifi is disabled</string>
     <string name="restarting">Restarting…</string>
     <string name="starterr">Could not start the process!</string>
     <string name="unpackerr">Could not unpack binaries</string>
-    <string name="execerr">Could not execute %s</string>
     <string name="dirtystop">Warning: did not finish cleanly</string>
     <string name="stopAppRunningService">The app is terminated while the service is running!</string>
     <string name="invalidip">Invalid IP address</string>
     <string name="current">Current: </string>
     <string name="restartneeded">Restart for changes to take effect</string>
     <string name="destroyWhileRunning">Service destroyed while running!</string>
-    <string name="commandLineJavaProcess">Command line Java Process exited with status: %d</string>
     <string name="notifyingError">Notifying error</string>
+    <string formatted="false" name="creating">%s Creating…</string>
+    <string formatted="false" name="created">%s Created!</string>
+    <string formatted="false" name="starting">%s Starting…</string>
+    <string formatted="false" name="started">%s Starting… OK!</string>
+    <string formatted="false" name="stopped">%s Stopped!</string>
+    <string formatted="false" name="execerr">Could not execute %s</string>
+    <string formatted="false" name="netschange">NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s</string>
+    <string formatted="false" name="commandLineJavaProcess">Command line Java Process exited with status: %d</string>
 
     <!-- DO NOT TRANSLATE -->
     <string name="lan_netmask">lan_netmask</string>
