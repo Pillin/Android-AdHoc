@@ -19,6 +19,8 @@
 <resources>
 
     <string name="app_name">Android AdHoc</string>
+    <string name="creating">%s Creating…</string>
+    <string name="created">%s Created!</string>
     <string name="notify_running">Sharing your connection</string>
     <string name="notify_error">Error occured</string>
     <string name="starting">%s Starting…</string>
@@ -77,7 +79,6 @@
         <item>13 – 2472 MHz</item>
         <!-- <item>14 - 2484 MHz</item> -->
     </string-array>
-
     <string-array name="script_values">
         <item></item>
         <item>script_hero</item>
@@ -93,6 +94,5 @@
 
     <string name="fixUrl">http://szym.net/barnacle/fix/</string>
     <string name="rootUrl">http://szym.net/barnacle/faq/#root</string>
-
 
 </resources>

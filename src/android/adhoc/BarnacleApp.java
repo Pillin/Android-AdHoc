@@ -35,37 +35,31 @@ import android.widget.Toast;
 */
 public class BarnacleApp extends android.app.Application {
     final static String TAG = "BarnacleApp";
+    public static String app_name;
     
-    final static String ACTION_TOGGLE = "android.hlmp.bernacle.TOGGLE_STATE";
-    final static String ACTION_CHECK = "android.hlmp.bernacle.CHECK_STATE";
-    final static String ACTION_CHANGED = "android.hlmp.bernacle.STATE_CHANGED";
-
     final static int ERROR_ROOT = 1;
     final static int ERROR_OTHER = 2;
     final static int ERROR_SUPPLICANT = 3;
 
+    final static int NOTIFY_RUNNING = 0;
+    final static int NOTIFY_ERROR = 1;
+    
     SharedPreferences prefs;
     private MainActivity statusActivity = null;
     private Toast toast;
-
+    public BarnacleService service = null;
+    
     private WifiManager wifiManager;
-
+    private boolean previousWifiState;
     private NotificationManager notificationManager;
     private Notification notification;
-    
     private Notification notificationError;
-    final static int NOTIFY_RUNNING = 0;
-    final static int NOTIFY_ERROR = 1;
-
-    public BarnacleService service = null;
-    public static String app_name;
-
-    private boolean shouldDisableWifi;
-  
+    
 
     @Override
     public void onCreate() {
         super.onCreate();
+        Log.d(TAG, String.format(getString(R.string.creating), this.getClass().getSimpleName()));
         NativeHelper.setup(this);
         app_name = getString(R.string.app_name);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
@@ -94,22 +88,19 @@ public class BarnacleApp extends android.app.Application {
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
 
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        if (!wifiManager.isWifiEnabled()) {
-            wifiManager.setWifiEnabled(true);
-            shouldDisableWifi = true;
+        if (previousWifiState = wifiManager.isWifiEnabled()) {
+            wifiManager.setWifiEnabled(false);
         }
-        wifiManager.startScan();
-        Log.d(TAG, this.getClass().getSimpleName() + " Created!");
+        
+        Log.d(TAG, String.format(getString(R.string.created), this.getClass().getSimpleName()));
     }
 
     @Override
     public void onTerminate() {
         if (service != null) {
+//        	TODO: FVALVERD pasar el texto a string.xml
             Log.e(TAG, "The app is terminated while the service is running!");
             service.stopRequest();
-        }
-        if (shouldDisableWifi) {
-            wifiManager.setWifiEnabled(false);
         }
         super.onTerminate();
     }
@@ -134,18 +125,10 @@ public class BarnacleApp extends android.app.Application {
         return state;
     }
 
-    public boolean isChanging() {
-        return getState() == BarnacleService.STATE_STARTING;
-    }
-
     public boolean isRunning() {
         return getState() == BarnacleService.STATE_RUNNING;
     }
-
-    public boolean isStopped() {
-        return getState() == BarnacleService.STATE_STOPPED;
-    }
-
+    
     void setStatusActivity(MainActivity sa) {
         statusActivity = sa;
     }
@@ -168,6 +151,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStarted() {
+//    	TODO: FVALVERD pasar el texto a string.xml
         Log.d(TAG, "Wireless ADHOC Started!");
         Intent ni = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
@@ -178,6 +162,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStopped() {
+//    	TODO: FVALVERD pasar el texto a string.xml
         Log.d(TAG, "Wireless ADHOC Stoped!");
         notificationManager.cancel(NOTIFY_RUNNING);
         if (service != null) {
@@ -185,6 +170,9 @@ public class BarnacleApp extends android.app.Application {
         }
         service = null;
         updateStatus();
+        if (previousWifiState) {
+            wifiManager.setWifiEnabled(true);
+        }
     }
 
     void failed(int err) {

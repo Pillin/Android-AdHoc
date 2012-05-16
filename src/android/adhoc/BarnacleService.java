@@ -42,46 +42,29 @@ import android.util.Log;
 */
 public class BarnacleService extends android.app.Service {
     final static String TAG = "BarnacleService";
-    // messages from the process
+    
     final static int MSG_OUTPUT     = 1;
     final static int MSG_ERROR      = 2;
-    // messages from self
     final static int MSG_EXCEPTION  = 3;
     final static int MSG_NETSCHANGE = 4;
-    // requests from activities
     final static int MSG_START      = 5;
     final static int MSG_STOP       = 6;
-    // app states
+    
     public final static int STATE_STOPPED  = 0;
     public final static int STATE_STARTING = 1;
     public final static int STATE_RUNNING  = 2;
 
-    // private state
-    private int state = STATE_STOPPED;
-    private Process process = null;
-    // output monitoring threads
-    private Thread[] threads = new Thread[2];
-    private PowerManager.WakeLock wakeLock;
-    private BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            mHandler.sendEmptyMessage(MSG_NETSCHANGE);
-        }
-    };
-
     // WARNING: this is not entirely safe
     public static BarnacleService singleton = null;
-
     private BarnacleApp app;
+    private int state = STATE_STOPPED;
+    private Process process = null;
+    private Thread[] threads = new Thread[2];
+    private PowerManager.WakeLock wakeLock;
     private WifiManager wifiManager;
-    
-    private boolean filteringEnabled = false;
     private Method mStartForeground = null;
-
     
-    /** 
-     * Worker Threads
-     **/
+   
     private class OutputMonitor implements Runnable {
         private final java.io.BufferedReader br;
         private final int msg;
@@ -102,6 +85,7 @@ public class BarnacleService extends android.app.Service {
         }
     }
   
+ 
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -109,14 +93,21 @@ public class BarnacleService extends android.app.Service {
         }
     };
 
+    private BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            mHandler.sendEmptyMessage(MSG_NETSCHANGE);
+        }
+    };
+    
 
     @Override
     public void onCreate() {
-        super.onCreate();
+    	super.onCreate();
+    	Log.d(TAG, String.format(getString(R.string.creating), this.getClass().getSimpleName()));
+    	
         singleton = this;
-
         wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        
         try {
             mStartForeground = getClass().getMethod("startForeground", new Class[] {
                     int.class, Notification.class});
@@ -125,8 +116,6 @@ public class BarnacleService extends android.app.Service {
         }
 
         state = STATE_STOPPED;
-        filteringEnabled = false;
-
         app = (BarnacleApp)getApplication();
         app.serviceStarted(this);
 
@@ -140,8 +129,7 @@ public class BarnacleService extends android.app.Service {
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(connectivityReceiver, filter);
         
-//      TODO: FVALVERD pasar el texto a string.xml  
-        Log.d(TAG, this.getClass().getSimpleName() + " Created!");
+        Log.d(TAG, String.format(getString(R.string.created), this.getClass().getSimpleName()));
     }
 
     @Override
@@ -184,10 +172,6 @@ public class BarnacleService extends android.app.Service {
 
     public int getState() {
         return state;
-    }
-
-    public boolean hasFiltering() {
-        return filteringEnabled;
     }
 
     private void handle(Message msg) {
@@ -310,9 +294,6 @@ public class BarnacleService extends android.app.Service {
         }
     }
 
-	/**
-     * Prepare env vars for wifi script from app preferences
-     **/
     protected String[] getEnvironmentFromPrefs() {
     	ArrayList<String> envlist = new ArrayList<String>();
 
