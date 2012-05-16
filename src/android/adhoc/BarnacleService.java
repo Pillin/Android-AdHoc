@@ -135,9 +135,9 @@ public class BarnacleService extends android.app.Service {
     @Override
     public void onDestroy() {
         if (state != STATE_STOPPED) {
-//        	TODO: FVALVERD pasar el texto a string.xml
-        	Log.e(TAG, "service destroyed while running!");
+        	Log.e(TAG, getString(R.string.destroyWhileRunning));
         }
+        
         // ensure we clean up
         stopProcess();
         state = STATE_STOPPED;
@@ -147,7 +147,6 @@ public class BarnacleService extends android.app.Service {
         try {
             unregisterReceiver(connectivityReceiver);
         } catch (Exception e) {
-            // ignore
         }
 
         singleton = null;
@@ -349,25 +348,22 @@ public class BarnacleService extends android.app.Service {
 
     private void stopProcess() {
         if (process != null) {
-            // first, just close the stream
             if (state != STATE_STOPPED) {
                 try {
                     process.getOutputStream().close();
                 } catch (Exception e) {
-//                  TODO: FVALVERD pasar este texto a string.xml
-                    Log.w(TAG, "Exception while closing process");
+                	e.printStackTrace();
                 }
             }
             try {
-                process.waitFor(); // blocking!
+                process.waitFor();
             } catch (InterruptedException e) {
-                Log.e(TAG, "");
             }
 
             try {
                 int exit_status = process.exitValue();
-//                TODO: FVALVERD pasar este texto a string.xml
-                Log.i(TAG, "Command line Java Process exited with status: " + exit_status);
+                String formatString = getString(R.string.commandLineJavaProcess); 
+                Log.i(TAG, String.format(formatString, exit_status));
             } catch (IllegalThreadStateException e) {
             	e.printStackTrace();
                 Log.e(TAG, getString(R.string.dirtystop));

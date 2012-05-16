@@ -98,8 +98,7 @@ public class BarnacleApp extends android.app.Application {
     @Override
     public void onTerminate() {
         if (service != null) {
-//        	TODO: FVALVERD pasar el texto a string.xml
-            Log.e(TAG, "The app is terminated while the service is running!");
+        	Log.e(TAG, getString(R.string.stopAppRunningService));
             service.stopRequest();
         }
         super.onTerminate();
@@ -151,25 +150,23 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStarted() {
-//    	TODO: FVALVERD pasar el texto a string.xml
-        Log.d(TAG, "Wireless ADHOC Started!");
-        Intent ni = new Intent(this, MainActivity.class);
+    	Intent ni = new Intent(this, MainActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
         String notify_running = getString(R.string.notify_running); 
         notification.setLatestEventInfo(this, app_name, notify_running, pi);
         notificationManager.notify(NOTIFY_RUNNING, notification);
         service.startForegroundCompat(NOTIFY_RUNNING, notification);
+        Log.d(TAG, getString(R.string.adhocStarted));
     }
 
     void processStopped() {
-//    	TODO: FVALVERD pasar el texto a string.xml
-        Log.d(TAG, "Wireless ADHOC Stoped!");
-        notificationManager.cancel(NOTIFY_RUNNING);
+    	notificationManager.cancel(NOTIFY_RUNNING);
         if (service != null) {
         	service.stopSelf();
         }
         service = null;
         updateStatus();
+        Log.d(TAG, getString(R.string.adhocStoped));
         if (previousWifiState) {
             wifiManager.setWifiEnabled(true);
         }
@@ -186,8 +183,7 @@ public class BarnacleApp extends android.app.Application {
             }
         }
         if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
-//        	TODO: FVALVERDE pasar el texto a string.xml
-            Log.d(TAG, "Notifying error");
+            Log.d(TAG, getString(R.string.notifyingError));
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
     }
