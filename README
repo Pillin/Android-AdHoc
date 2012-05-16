@@ -1,10 +1,7 @@
-OLSR Mesh Tether
+Ad Hoc Wireless
 ====================
 
-OLSR Mesh Tether is a combination of tools to provide OLSR mesh networking
-over wifi on an Android phone.  It handles setting up the wifi into ad-hoc
-mode, setting up the IP address, and running the olsrd program.
-
+Setting up the wifi into ad-hoc mode, setting up the IP address.
 It is based on the Barnacle Wifi Tether app.
 
 How to build
@@ -12,15 +9,12 @@ How to build
 
 Prerequisites:
 1) Android NDK r4 or above
-2) Eclipse and ADT plugin
+2) Eclipse and ADT plugin (android-10)
  
 To build native components, run these commands in the root directory of this
 project:
 
- ndk-build
- make -C externals
+ $ ANDROID_NDK_PATH/ndk-build
  
-To build the Android app, import the existing project into Eclipse and export 
-an .apk file.
-
-
+ 
+To build the Android App, import the project into Eclipse and export to .apk
