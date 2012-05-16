@@ -33,7 +33,7 @@ import android.widget.Toast;
 /**
 * Manages preferences, activities and prepares the service
 */
-public class BarnacleApp extends android.app.Application {
+public class AdHocApp extends android.app.Application {
     final static String TAG = "BarnacleApp";
     public static String app_name;
     
@@ -45,9 +45,9 @@ public class BarnacleApp extends android.app.Application {
     final static int NOTIFY_ERROR = 1;
     
     SharedPreferences prefs;
-    private MainActivity statusActivity = null;
+    private AdHocActivity statusActivity = null;
     private Toast toast;
-    public BarnacleService service = null;
+    public AdHocService service = null;
     
     private WifiManager wifiManager;
     private boolean previousWifiState;
@@ -82,7 +82,7 @@ public class BarnacleApp extends android.app.Application {
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         
         String notify_error = getString(R.string.notify_error);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, MainActivity.class), 0);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, AdHocActivity.class), 0);
         notificationError = new Notification(R.drawable.barnacle_error,notify_error, 0);
         notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
@@ -106,7 +106,7 @@ public class BarnacleApp extends android.app.Application {
 
     public void startService() {
         if (service == null) {
-            startService(new Intent(this, BarnacleService.class));
+            startService(new Intent(this, AdHocService.class));
         }
     }
 
@@ -117,7 +117,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     public int getState() {
-    	int state = BarnacleService.STATE_STOPPED;
+    	int state = AdHocService.STATE_STOPPED;
         if (service != null) {
         	state = service.getState();
         }
@@ -125,14 +125,14 @@ public class BarnacleApp extends android.app.Application {
     }
 
     public boolean isRunning() {
-        return getState() == BarnacleService.STATE_RUNNING;
+        return getState() == AdHocService.STATE_RUNNING;
     }
     
-    void setStatusActivity(MainActivity sa) {
+    void setStatusActivity(AdHocActivity sa) {
         statusActivity = sa;
     }
     
-    void serviceStarted(BarnacleService service) {
+    void serviceStarted(AdHocService service) {
         this.service = service;
         service.startRequest();
     }
@@ -150,7 +150,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void processStarted() {
-    	Intent ni = new Intent(this, MainActivity.class);
+    	Intent ni = new Intent(this, AdHocActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
         String notify_running = getString(R.string.notify_running); 
         notification.setLatestEventInfo(this, app_name, notify_running, pi);
@@ -175,11 +175,11 @@ public class BarnacleApp extends android.app.Application {
     void failed(int err) {
         if (statusActivity != null) {
             if (err == ERROR_ROOT) {
-                statusActivity.showDialog(MainActivity.DLG_ROOT);
+                statusActivity.showDialog(AdHocActivity.DLG_ROOT);
             } else if (err == ERROR_SUPPLICANT) {
-                statusActivity.showDialog(MainActivity.DLG_SUPPLICANT);
+                statusActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
-                statusActivity.showDialog(MainActivity.DLG_ERROR);
+                statusActivity.showDialog(AdHocActivity.DLG_ERROR);
             }
         }
         if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
@@ -189,7 +189,7 @@ public class BarnacleApp extends android.app.Application {
     }
 
     void cleanUpNotifications() {
-        if ((service != null) && (service.getState() == BarnacleService.STATE_STOPPED)) {
+        if ((service != null) && (service.getState() == AdHocService.STATE_STOPPED)) {
             processStopped(); // clean up notifications
         }
     }

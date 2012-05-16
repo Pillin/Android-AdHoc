@@ -69,7 +69,7 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         if (key == null) {
         	return true;
         }
-        if (((BarnacleApp)getApplication()).isRunning()) {
+        if (((AdHocApp)getApplication()).isRunning()) {
             Toast.makeText(this, getString(R.string.restartneeded), Toast.LENGTH_SHORT).show();
         }
         if (ListPreference.class.isInstance(pref) || EditTextPreference.class.isInstance(pref)) {

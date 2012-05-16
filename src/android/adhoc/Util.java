@@ -85,7 +85,7 @@ public class Util {
             p = Runtime.getRuntime().exec(cmd);
             return p.waitFor();
         } catch (Exception e) {
-            Log.e(BarnacleApp.TAG, "exec: " + cmd, e);
+            Log.e(AdHocApp.TAG, "exec: " + cmd, e);
             if (p != null) p.destroy();
             return -1;
         }
@@ -98,7 +98,7 @@ public class Util {
             p = Runtime.getRuntime().exec("getprop " + key);
             return toReader(p.getInputStream()).readLine();
         } catch (Exception e) {
-            Log.e(BarnacleApp.TAG, "getprop: " + key, e);
+            Log.e(AdHocApp.TAG, "getprop: " + key, e);
             if (p != null) p.destroy();
             return null;
         }

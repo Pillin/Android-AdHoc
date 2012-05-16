@@ -32,13 +32,13 @@ import android.view.View.OnClickListener;
 import android.widget.ToggleButton;
 
 
-public class MainActivity extends Activity {
+public class AdHocActivity extends Activity {
 	
 	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
     final static int DLG_SUPPLICANT = 3;
 	
-	private BarnacleApp app;
+	private AdHocApp app;
     private ToggleButton onoff;
     
 
@@ -46,7 +46,7 @@ public class MainActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        app = (BarnacleApp)getApplication();
+        app = (AdHocApp)getApplication();
         setContentView(R.layout.main);
 
         onoff = (ToggleButton) findViewById(R.id.onoff);
@@ -147,21 +147,21 @@ public class MainActivity extends Activity {
     void update() {
         int state = app.getState();
 
-        if (state == BarnacleService.STATE_STOPPED) {
+        if (state == AdHocService.STATE_STOPPED) {
             onoff.setChecked(false);
             return; // not ready yet! keep the old log
         }
 
-        BarnacleService svc = app.service;
+        AdHocService svc = app.service;
         if (svc == null) return; // unexpected race condition
 
-        if (state == BarnacleService.STATE_STARTING) {
+        if (state == AdHocService.STATE_STARTING) {
             onoff.setPressed(true);
             onoff.setChecked(true);
             return;
         }
 
-        if (state != BarnacleService.STATE_RUNNING) {
+        if (state != AdHocService.STATE_RUNNING) {
         	return;
         }
 

@@ -38,8 +38,8 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 
 
-public class BarnacleService extends android.app.Service {
-    final static String TAG = "BarnacleService";
+public class AdHocService extends android.app.Service {
+    final static String TAG = "AdHocService";
     
     private static final int THREAD_OUTPUT	= 0;
 	private static final int THREAD_ERROR	= 1;
@@ -53,7 +53,7 @@ public class BarnacleService extends android.app.Service {
     public final static int STATE_STARTING = 1;
     public final static int STATE_RUNNING  = 2;
     
-    private BarnacleApp app;
+    private AdHocApp app;
     private int state = STATE_STOPPED;
     private Process process = null;
     private Thread[] threads = new Thread[2];
@@ -61,7 +61,7 @@ public class BarnacleService extends android.app.Service {
     private WifiManager wifiManager;
     private Method mStartForeground = null;
  // WARNING: this is not entirely safe
-    public static BarnacleService singleton = null;
+    public static AdHocService singleton = null;
    
     private class OutputMonitor implements Runnable {
         private final java.io.BufferedReader br;
@@ -117,7 +117,7 @@ public class BarnacleService extends android.app.Service {
         }
 
         state = STATE_STOPPED;
-        app = (BarnacleApp)getApplication();
+        app = (AdHocApp)getApplication();
         app.serviceStarted(this);
 
         // Unlock recive UDP ports
@@ -194,17 +194,17 @@ public class BarnacleService extends android.app.Service {
                 Log.e(TAG, "ERROR: " + line);
                 if ((state == STATE_STARTING)) {
                     if (isRootError(line)) {
-                        app.failed(BarnacleApp.ERROR_ROOT);
+                        app.failed(AdHocApp.ERROR_ROOT);
                     }
                     else if (isSupplicantError(line)) {
-                        app.failed(BarnacleApp.ERROR_SUPPLICANT);
+                        app.failed(AdHocApp.ERROR_SUPPLICANT);
                     }
                     else {
-                        app.failed(BarnacleApp.ERROR_OTHER);
+                        app.failed(AdHocApp.ERROR_OTHER);
                     }
                 }
                 else {
-                    app.failed(BarnacleApp.ERROR_OTHER);
+                    app.failed(AdHocApp.ERROR_OTHER);
                 }
             }
             else {
@@ -269,7 +269,7 @@ public class BarnacleService extends android.app.Service {
                     stopProcess();
                     Log.d(TAG, getString(R.string.restarting));
                     wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
-                    // TODO: FVALVERD we should wait until wifi is disabled...
+                    // TODO we should wait until wifi is disabled...
                     state = STATE_STARTING;
                 }
                 else if (state == STATE_STARTING) {
