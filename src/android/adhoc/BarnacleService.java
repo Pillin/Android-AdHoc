@@ -37,25 +37,22 @@ import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
 
-/**
-* Manages the running process, client list, and log
-*/
+
 public class BarnacleService extends android.app.Service {
     final static String TAG = "BarnacleService";
     
+    private static final int THREAD_OUTPUT	= 0;
+	private static final int THREAD_ERROR	= 1;
     final static int MSG_OUTPUT     = 1;
     final static int MSG_ERROR      = 2;
     final static int MSG_EXCEPTION  = 3;
     final static int MSG_NETSCHANGE = 4;
     final static int MSG_START      = 5;
     final static int MSG_STOP       = 6;
-    
     public final static int STATE_STOPPED  = 0;
     public final static int STATE_STARTING = 1;
     public final static int STATE_RUNNING  = 2;
-
-    // WARNING: this is not entirely safe
-    public static BarnacleService singleton = null;
+    
     private BarnacleApp app;
     private int state = STATE_STOPPED;
     private Process process = null;
@@ -63,14 +60,15 @@ public class BarnacleService extends android.app.Service {
     private PowerManager.WakeLock wakeLock;
     private WifiManager wifiManager;
     private Method mStartForeground = null;
-    
+ // WARNING: this is not entirely safe
+    public static BarnacleService singleton = null;
    
     private class OutputMonitor implements Runnable {
         private final java.io.BufferedReader br;
         private final int msg;
-        public OutputMonitor(int t, java.io.InputStream is) {
+        public OutputMonitor(int msgType, java.io.InputStream is) {
             br = Util.toReader(is);
-            msg = t;
+            msg = msgType;
         }
         public void run() {
             try{
@@ -85,7 +83,6 @@ public class BarnacleService extends android.app.Service {
         }
     }
   
- 
     private final Handler mHandler = new Handler() {
         @Override
         public void handleMessage(Message msg) {
@@ -93,6 +90,7 @@ public class BarnacleService extends android.app.Service {
         }
     };
 
+    
     private BroadcastReceiver connectivityReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
@@ -101,6 +99,9 @@ public class BarnacleService extends android.app.Service {
     };
     
 
+    
+    
+    
     @Override
     public void onCreate() {
     	super.onCreate();
@@ -158,9 +159,6 @@ public class BarnacleService extends android.app.Service {
         return null;
     }
     
-    /**
-     * Public service interface for Start
-     **/
     public void startRequest() {
         mHandler.sendEmptyMessage(MSG_START);
     }
@@ -179,6 +177,7 @@ public class BarnacleService extends android.app.Service {
             if (state == STATE_STOPPED) return;
             Throwable thr = (Throwable)msg.obj;
             thr.printStackTrace();
+//            TODO: FVALVERD pasar esto a string.xml
             Log.e(TAG, "EXCEPTION: " + thr.getMessage() + " " + Log.getStackTraceString(thr));
             stopProcess();
             state = STATE_STOPPED;
@@ -334,10 +333,10 @@ public class BarnacleService extends android.app.Service {
         try {
         	Runtime runtime = Runtime.getRuntime();
             process = runtime.exec(cmd, getEnvironmentFromPrefs(), NativeHelper.app_bin);
-            threads[0] = new Thread(new OutputMonitor(MSG_OUTPUT, process.getInputStream()));
-            threads[1] = new Thread(new OutputMonitor(MSG_ERROR, process.getErrorStream()));
-            threads[0].start();
-            threads[1].start();
+            threads[THREAD_OUTPUT] = new Thread(new OutputMonitor(MSG_OUTPUT, process.getInputStream()));
+            threads[THREAD_ERROR] = new Thread(new OutputMonitor(MSG_ERROR, process.getErrorStream()));
+            threads[THREAD_OUTPUT].start();
+            threads[THREAD_ERROR].start();
         } catch (Exception e) {
             Log.e(TAG, String.format(getString(R.string.execerr), cmd));
             Log.e(TAG, "start failed " + e.toString());
@@ -370,8 +369,8 @@ public class BarnacleService extends android.app.Service {
             }
             process.destroy();
             process = null;
-            threads[0].interrupt();
-            threads[1].interrupt();
+            threads[THREAD_OUTPUT].interrupt();
+            threads[THREAD_ERROR].interrupt();
         }
     }
 
