@@ -39,7 +39,7 @@ public class AdHocActivity extends Activity {
     final static int DLG_SUPPLICANT = 3;
     final static int DLG_ASSETS = 4;
 	
-	private AdHocApp app;
+	private AdHocApp adHocApp;
     private ToggleButton onoff;
     
 
@@ -47,7 +47,7 @@ public class AdHocActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        app = (AdHocApp)getApplication();
+        adHocApp = (AdHocApp)getApplication();
         setContentView(R.layout.main);
 
         onoff = (ToggleButton) findViewById(R.id.onoff);
@@ -56,26 +56,34 @@ public class AdHocActivity extends Activity {
             public void onClick(View v) {
                 onoff.setPressed(true);
                 if (onoff.isChecked()) {
-                	app.startService();
+                	adHocApp.startService();
                 }
                 else {
-                    app.stopService();
+                    adHocApp.stopService();
                 }
             }
         });
 
-        app.setStatusActivity(this);
+        adHocApp.setStatusActivity(this);
     }
     
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        app.setStatusActivity(null);
+        adHocApp.setStatusActivity(null);
     }
     
     @Override
+    protected void onResume() {
+        super.onResume();
+        this.updateActivityContent();
+        adHocApp.cleanUpNotifications();
+    }
+
+    
+    @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main, menu);
+        getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
     
@@ -88,14 +96,16 @@ public class AdHocActivity extends Activity {
         }
         return(super.onOptionsItemSelected(item));
     }
+
     
+    // TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead;
     @Override
     protected Dialog onCreateDialog(int id) {
         // TODO: these should not create and remove dialogs, but restore and dismiss
         if (id == DLG_ROOT) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Root Access")
+                .setTitle("AdHoc Root Access")
                 .setMessage("AdHoc requires 'su' to access the hardware! Please, make sure you have root access.")
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
                     @Override
@@ -115,7 +125,7 @@ public class AdHocActivity extends Activity {
         else if (id == DLG_ERROR) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Error")
+                .setTitle("AdHoc Error")
                 .setMessage("Unexpected error occured! Check the troubleshooting guide for the error printed in the log tab.")
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
                     @Override
@@ -135,13 +145,13 @@ public class AdHocActivity extends Activity {
         else if (id == DLG_SUPPLICANT) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Supplicant not available")
+                .setTitle("AdHoc Supplicant not available")
                 .setMessage("AdHoc had trouble starting wpa_supplicant. Try again but set 'Skip wpa_supplicant' in settings.")
                 .setPositiveButton("Do it now!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        app.prefs.edit().putBoolean(getString(R.string.lan_wext), true).commit();
-                        app.updateToast("Settings updated, try again...", true);
+                        adHocApp.prefs.edit().putBoolean(getString(R.string.lan_wext), true).commit();
+                        adHocApp.updateToast("Settings updated, try again...", true);
                     }
                 })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
@@ -155,7 +165,7 @@ public class AdHocActivity extends Activity {
         else if (id == DLG_ASSETS) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Assets does not exist!")
+                .setTitle("AdHoc Assets does not exist!")
                 .setMessage("Check if AdHoc App have assets folder.")
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
@@ -168,39 +178,25 @@ public class AdHocActivity extends Activity {
         return null;
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        update();
-        app.cleanUpNotifications();
-    }
-
-    /*
-     * Update Toggle Button Start-Stop
-     */
-    void update() {
-        int state = app.getState();
-
-        if (state == AdHocService.STATE_STOPPED) {
-            onoff.setChecked(false);
-            return; // not ready yet! keep the old log
+    
+    void updateActivityContent() {
+        if (adHocApp.adHocService != null) {
+        	switch (adHocApp.getState()) {
+				case AdHocService.STATE_STOPPED: {
+					onoff.setChecked(false);
+					break;
+				}
+				case AdHocService.STATE_STARTING: {
+					onoff.setPressed(true);
+		            onoff.setChecked(true);
+					break;
+				}
+				case AdHocService.STATE_RUNNING: {
+					onoff.setPressed(false);
+		            onoff.setChecked(true);
+					break;
+				}
+			}
         }
-
-        AdHocService svc = app.service;
-        if (svc == null) return; // unexpected race condition
-
-        if (state == AdHocService.STATE_STARTING) {
-            onoff.setPressed(true);
-            onoff.setChecked(true);
-            return;
-        }
-
-        if (state != AdHocService.STATE_RUNNING) {
-        	return;
-        }
-
-        // STATE_RUNNING
-        onoff.setPressed(false);
-        onoff.setChecked(true);
     }
 }

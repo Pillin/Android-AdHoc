@@ -43,12 +43,12 @@ public class AdHocApp extends android.app.Application {
     final static int NOTIFY_ERROR = 1;
     
     SharedPreferences prefs;
-    private AdHocActivity statusActivity = null;
-    private Toast toast;
-    public AdHocService service = null;
-    
+    public AdHocService adHocService = null;
+    private AdHocActivity adHocActivity = null;
     private WifiManager wifiManager;
     private boolean previousWifiState;
+    
+    private Toast toast;
     private NotificationManager notificationManager;
     private Notification notification;
     private Notification notificationError;
@@ -90,17 +90,18 @@ public class AdHocApp extends android.app.Application {
 
     @Override
     public void onTerminate() {
-        if (service != null) {
+        if (adHocService != null) {
         	Log.e(TAG, getString(R.string.stopAppRunningService));
-            service.stopRequest();
+            adHocService.stopRequest();
         }
         super.onTerminate();
     }
     
 
     public void startService() {
+    	notificationManager.cancel(NOTIFY_ERROR);
     	this.pickUpNewIP();
-        if (service == null) {
+    	if (adHocService == null) {
             startService(new Intent(this, AdHocService.class));
         }
     }
@@ -116,16 +117,16 @@ public class AdHocApp extends android.app.Application {
 	}
 
 	public void stopService() {
-        if (service != null) {
-            service.stopRequest();
+		if (adHocService != null) {
+            adHocService.stopRequest();
         }
     }
     
 
     public int getState() {
     	int state = AdHocService.STATE_STOPPED;
-        if (service != null) {
-        	state = service.getState();
+        if (adHocService != null) {
+        	state = adHocService.getState();
         }
         return state;
     }
@@ -137,19 +138,19 @@ public class AdHocApp extends android.app.Application {
     
     
     void setStatusActivity(AdHocActivity sa) {
-        statusActivity = sa;
+        adHocActivity = sa;
     }
     
     
     void serviceStarted(AdHocService service) {
-        this.service = service;
+        this.adHocService = service;
         service.startRequest();
     }
     
 
     void updateStatus() {
-        if (statusActivity != null) {
-            statusActivity.update();
+        if (adHocActivity != null) {
+            adHocActivity.updateActivityContent();
         }
     }
     
@@ -167,17 +168,17 @@ public class AdHocApp extends android.app.Application {
         String notify_running = getString(R.string.notify_running); 
         notification.setLatestEventInfo(this, app_name, notify_running, pi);
         notificationManager.notify(NOTIFY_RUNNING, notification);
-        service.startForegroundCompat(NOTIFY_RUNNING, notification);
+        adHocService.startForegroundCompat(NOTIFY_RUNNING, notification);
         Log.d(TAG, getString(R.string.adhocStarted));
     }
     
 
     void processStopped() {
     	notificationManager.cancel(NOTIFY_RUNNING);
-        if (service != null) {
-        	service.stopSelf();
+        if (adHocService != null) {
+        	adHocService.stopSelf();
         }
-        service = null;
+        adHocService = null;
         updateStatus();
         Log.d(TAG, getString(R.string.adhocStoped));
         if (previousWifiState) {
@@ -187,18 +188,22 @@ public class AdHocApp extends android.app.Application {
     
 
     void failed(int err) {
-        if (statusActivity != null) {
+        if (adHocActivity != null) {
             if (err == ERROR_ROOT) {
-                statusActivity.showDialog(AdHocActivity.DLG_ROOT);
+            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
+                adHocActivity.showDialog(AdHocActivity.DLG_ROOT);
             } else if (err == ERROR_SUPPLICANT) {
-                statusActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
+            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
+                adHocActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
-                statusActivity.showDialog(AdHocActivity.DLG_ERROR);
+            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
+                adHocActivity.showDialog(AdHocActivity.DLG_ERROR);
             } else if (err == ERROR_ASSETS) {
-            	statusActivity.showDialog(AdHocActivity.DLG_ASSETS);
+            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
+            	adHocActivity.showDialog(AdHocActivity.DLG_ASSETS);
             }
         }
-        if ((statusActivity == null) || !statusActivity.hasWindowFocus()) {
+        if ((adHocActivity == null) || !adHocActivity.hasWindowFocus()) {
             Log.d(TAG, getString(R.string.notifyingError));
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
@@ -206,7 +211,7 @@ public class AdHocApp extends android.app.Application {
     
 
     void cleanUpNotifications() {
-        if ((service != null) && (service.getState() == AdHocService.STATE_STOPPED)) {
+        if ((adHocService != null) && (adHocService.getState() == AdHocService.STATE_STOPPED)) {
             processStopped(); // clean up notifications
         }
     }
