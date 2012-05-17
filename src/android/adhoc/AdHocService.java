@@ -180,17 +180,17 @@ public class AdHocService extends android.app.Service {
                 Log.e(TAG, "ERROR: " + line);
                 if ((this.state == STATE_STARTING)) {
                     if (NativeHelper.isRootError(line)) {
-                        this.adHocApp.failed(AdHocApp.ERROR_ROOT);
+                        this.adHocApp.adHocFailed(AdHocApp.ERROR_ROOT);
                     }
                     else if (NativeHelper.isSupplicantError(line)) {
-                    	this.adHocApp.failed(AdHocApp.ERROR_SUPPLICANT);
+                    	this.adHocApp.adHocFailed(AdHocApp.ERROR_SUPPLICANT);
                     }
                     else {
-                    	this.adHocApp.failed(AdHocApp.ERROR_OTHER);
+                    	this.adHocApp.adHocFailed(AdHocApp.ERROR_OTHER);
                     }
                 }
                 else {
-                	this.adHocApp.failed(AdHocApp.ERROR_OTHER);
+                	this.adHocApp.adHocFailed(AdHocApp.ERROR_OTHER);
                 }
             }
             else {

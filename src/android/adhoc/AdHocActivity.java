@@ -21,6 +21,7 @@ package android.adhoc;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -38,6 +39,8 @@ public class AdHocActivity extends Activity {
     final static int DLG_ERROR = 2;
     final static int DLG_SUPPLICANT = 3;
     final static int DLG_ASSETS = 4;
+    final static int DLG_STARTING = 5;
+    final static int DLG_STOPPING = 6;
 	
 	private AdHocApp adHocApp;
     private ToggleButton onoff;
@@ -177,6 +180,22 @@ public class AdHocActivity extends Activity {
                     }
                 })
                 .create();
+        }
+        else if (id == DLG_STARTING) {
+        	ProgressDialog progressDialog = new ProgressDialog(this);
+	    	progressDialog.setTitle(getString(R.string.adhocStarting));
+	    	progressDialog.setMessage(getString(R.string.adhocStartingMessage));
+	    	progressDialog.setIndeterminate(false);
+	    	progressDialog.setCancelable(true);
+	        return progressDialog;
+        }
+        else if (id == DLG_STOPPING) {
+        	ProgressDialog progressDialog = new ProgressDialog(this);
+	    	progressDialog.setTitle(getString(R.string.adhocStopping));
+	    	progressDialog.setMessage(getString(R.string.adhocStoppingMessage));
+	    	progressDialog.setIndeterminate(false);
+	    	progressDialog.setCancelable(true);
+	        return progressDialog;
         }
         return null;
     }

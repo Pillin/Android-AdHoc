@@ -97,7 +97,7 @@ public class AdHocApp extends android.app.Application {
         
         if (!NativeHelper.unzipAssets(this)) {
             Log.e(TAG, getString(R.string.unpackerr));
-           this.failed(ERROR_ASSETS);
+           this.adHocFailed(ERROR_ASSETS);
         }
     }
 
@@ -120,7 +120,7 @@ public class AdHocApp extends android.app.Application {
     }
     
     public void startAdHoc() {
-//    	TODO: FVALVERD add ProgressDialog, stop on adHocStarted
+    	adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
     	this.notificationManager.cancel(NOTIFY_ERROR);
     	this.pickUpNewIP();
     	if (this.adHocService == null) {
@@ -129,6 +129,7 @@ public class AdHocApp extends android.app.Application {
     }
     
 	public void stopAdHoc() {
+		adHocActivity.showDialog(AdHocActivity.DLG_STOPPING);
 		if (this.adHocService != null) {
 			this.stopService(new Intent(this, AdHocService.class));
         }
@@ -144,6 +145,9 @@ public class AdHocApp extends android.app.Application {
     
 
     public void adHocStarted() {
+    	try {
+    		this.adHocActivity.dismissDialog(AdHocActivity.DLG_STARTING);
+    	} catch(Exception e) {}
     	Intent ni = new Intent(this, AdHocActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
         String notifyRunningFormat = this.getString(R.string.notify_running);
@@ -160,26 +164,22 @@ public class AdHocApp extends android.app.Application {
     	this.notificationManager.cancel(NOTIFY_RUNNING);
     	this.adHocService = null;
         this.updateStatus();
-        Log.d(TAG, getString(R.string.adhocStoped));
+        Log.d(TAG, getString(R.string.adhocStopped));
         if (this.previousWifiState) {
         	this.wifiManager.setWifiEnabled(true);
         }
+        try{
+        	this.adHocActivity.dismissDialog(AdHocActivity.DLG_STOPPING);
+	    } catch(Exception e) {}
     }
 
-    
-    void updateStatus() {
-        if (adHocActivity != null) {
-            adHocActivity.updateActivityContent();
-        }
-    }
-    
-    void updateToast(String msg, boolean islong) {
-        toast.setText(msg);
-        toast.setDuration(islong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
-        toast.show();
-    }
-        
-    void failed(int err) {
+    public void adHocFailed(int err) {
+    	try {
+    		this.adHocActivity.dismissDialog(AdHocActivity.DLG_STARTING);
+    	} catch(Exception e) {}
+    	try{
+        	this.adHocActivity.dismissDialog(AdHocActivity.DLG_STOPPING);
+	    } catch(Exception e) {}
         if (adHocActivity != null) {
             if (err == ERROR_ROOT) {
             	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
@@ -200,7 +200,20 @@ public class AdHocApp extends android.app.Application {
             notificationManager.notify(NOTIFY_ERROR, notificationError);
         }
     }
+
     
+    void updateStatus() {
+        if (adHocActivity != null) {
+            adHocActivity.updateActivityContent();
+        }
+    }
+    
+    void updateToast(String msg, boolean islong) {
+        toast.setText(msg);
+        toast.setDuration(islong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        toast.show();
+    }
+
     void cleanUpNotifications() {
         if ((adHocService != null) && (adHocService.getState() == AdHocService.STATE_STOPPED)) {
             adHocStopped(); // clean up notifications

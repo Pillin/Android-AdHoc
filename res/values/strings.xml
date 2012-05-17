@@ -19,8 +19,12 @@
 <resources>
 
     <string name="app_name">AdHoc</string>
+    <string name="adhocStarting">Starting…</string>
+    <string name="adhocStartingMessage">Please wait while AdHoc starting…</string>
     <string name="adhocStarted">Wireless AdHoc Started!</string>
-    <string name="adhocStoped">Wireless AdHoc Stopped!</string>
+    <string name="adhocStopping">Stopping…</string>
+    <string name="adhocStoppingMessage">Please wait while AdHoc stopping…</string>
+    <string name="adhocStopped">Wireless AdHoc Stopped!</string>
     <string name="notify_running">Sharing %s AdHoc Wireless</string>
     <string name="notify_error">Error occured</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>

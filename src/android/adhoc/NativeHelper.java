@@ -29,6 +29,8 @@ public class NativeHelper {
 	public static void setup(Context context, String format) {
 		missedFileFormat = format;
 		app_bin = context.getDir("bin", Context.MODE_PRIVATE).getAbsoluteFile();
+		// run need it
+		context.getDir("log", Context.MODE_PRIVATE).getAbsoluteFile();
 		// TODO: FVALVERD pasar este texto a string.xml
 		SU_C_FILE = new File(app_bin, "su_c");
 		SU_C = SU_C_FILE.getAbsolutePath();
