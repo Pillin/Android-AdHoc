@@ -41,11 +41,12 @@
     <string formatted="false" name="creating">%s Creating…</string>
     <string formatted="false" name="created">%s Created!</string>
     <string formatted="false" name="starting">%s Starting…</string>
-    <string formatted="false" name="started">%s Starting… OK!</string>
+    <string formatted="false" name="started">%s Started!</string>
+    <string formatted="false" name="stopping">%s Stopping</string>
     <string formatted="false" name="stopped">%s Stopped!</string>
     <string formatted="false" name="execerr">Could not execute %s</string>
     <string formatted="false" name="netschange">NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s</string>
-    <string formatted="false" name="commandLineJavaProcess">Command line Java Process exited with status: %d</string>
+    <string formatted="false" name="nativeProcess">Native Process exited with status: %d</string>
 
     <!-- DO NOT TRANSLATE -->
     <string name="lan_netmask">lan_netmask</string>

@@ -14,19 +14,17 @@ import android.util.Log;
 
 
 public class NativeHelper {
-	
 	public static final String TAG = "NativeHelper";
-	
 	public static File app_bin;
-	
-	static String missedFileFormat;
-	static String SU_C;
-    static String RUN;
-    static String WIFI;
+	public static String missedFileFormat;
+	public static String SU_C;
+	public static String RUN;
+	public static String WIFI;
 
 	private static File SU_C_FILE;
 	private static File RUN_FILE;
 	private static File WIFI_FILE;
+
 
 	public static void setup(Context context, String format) {
 		missedFileFormat = format;
@@ -110,7 +108,6 @@ public class NativeHelper {
 		}
 	}
 
-	
 	public static boolean existAssets(AdHocService adHocService) {
 		boolean state = true;
 		if (!app_bin.exists()) {
@@ -130,5 +127,18 @@ public class NativeHelper {
 			state = false;
 		}
 		return state;
+	}
+
+
+	public static boolean isSupplicantError(String msg) {
+		return msg.contains("supplicant");
+	}
+
+	public static boolean isRootError(String msg) {
+		return msg.contains("ermission") || msg.contains("su: not found");
+	}
+
+	public static boolean isWifiOK(String line) {
+		return line.startsWith("WIFI: OK");
 	}
 }

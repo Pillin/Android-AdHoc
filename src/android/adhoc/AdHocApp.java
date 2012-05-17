@@ -53,7 +53,17 @@ public class AdHocApp extends android.app.Application {
     private Notification notification;
     private Notification notificationError;
     
+    
+    private void pickUpNewIP() {
+    	SharedPreferences.Editor e = prefs.edit();
+    	String ipFormat = getString(R.string.ipFormat);
+    	ipFormat = String.format(ipFormat, (int)(Math.random()*255), (int)(Math.random()*255));
+    	e.putString(getString(R.string.lan_gw), ipFormat);
+    	e.commit();
+    	Log.i(TAG, "Generated IP: " + ipFormat);
+	}
 
+    
     @Override
     public void onCreate() {
         super.onCreate();
@@ -92,37 +102,34 @@ public class AdHocApp extends android.app.Application {
     public void onTerminate() {
         if (adHocService != null) {
         	Log.e(TAG, getString(R.string.stopAppRunningService));
-            adHocService.stopRequest();
+            adHocService.stopAdHocService();
         }
         super.onTerminate();
     }
     
+    
+    public void setAdHocActivity(AdHocActivity adHocActivity) {
+        this.adHocActivity = adHocActivity;
+    }
 
-    public void startService() {
+    public void setAdHocService(AdHocService adHocService) {
+        this.adHocService = adHocService;
+    }
+    
+    public void startAdHoc() {
     	notificationManager.cancel(NOTIFY_ERROR);
     	this.pickUpNewIP();
     	if (adHocService == null) {
-            startService(new Intent(this, AdHocService.class));
+            this.startService(new Intent(this, AdHocService.class));
         }
     }
     
-
-    private void pickUpNewIP() {
-    	SharedPreferences.Editor e = prefs.edit();
-    	String ipFormat = getString(R.string.ipFormat);
-    	ipFormat = String.format(ipFormat, (int)(Math.random()*255), (int)(Math.random()*255));
-    	e.putString(getString(R.string.lan_gw), ipFormat);
-    	e.commit();
-    	Log.i(TAG, "Generated IP: " + ipFormat);
-	}
-
-	public void stopService() {
+	public void stopAdHoc() {
 		if (adHocService != null) {
-            adHocService.stopRequest();
+            adHocService.stopAdHocService();
         }
     }
     
-
     public int getState() {
     	int state = AdHocService.STATE_STOPPED;
         if (adHocService != null) {
@@ -130,35 +137,9 @@ public class AdHocApp extends android.app.Application {
         }
         return state;
     }
-    
 
     public boolean isRunning() {
         return getState() == AdHocService.STATE_RUNNING;
-    }
-    
-    
-    void setStatusActivity(AdHocActivity sa) {
-        adHocActivity = sa;
-    }
-    
-    
-    void serviceStarted(AdHocService service) {
-        this.adHocService = service;
-        service.startRequest();
-    }
-    
-
-    void updateStatus() {
-        if (adHocActivity != null) {
-            adHocActivity.updateActivityContent();
-        }
-    }
-    
-
-    void updateToast(String msg, boolean islong) {
-        toast.setText(msg);
-        toast.setDuration(islong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
-        toast.show();
     }
     
 
@@ -171,7 +152,6 @@ public class AdHocApp extends android.app.Application {
         adHocService.startForegroundCompat(NOTIFY_RUNNING, notification);
         Log.d(TAG, getString(R.string.adhocStarted));
     }
-    
 
     void processStopped() {
     	notificationManager.cancel(NOTIFY_RUNNING);
@@ -179,14 +159,26 @@ public class AdHocApp extends android.app.Application {
         	adHocService.stopSelf();
         }
         adHocService = null;
-        updateStatus();
+        this.updateStatus();
         Log.d(TAG, getString(R.string.adhocStoped));
         if (previousWifiState) {
             wifiManager.setWifiEnabled(true);
         }
     }
-    
 
+    
+    void updateStatus() {
+        if (adHocActivity != null) {
+            adHocActivity.updateActivityContent();
+        }
+    }
+    
+    void updateToast(String msg, boolean islong) {
+        toast.setText(msg);
+        toast.setDuration(islong ? Toast.LENGTH_LONG : Toast.LENGTH_SHORT);
+        toast.show();
+    }
+        
     void failed(int err) {
         if (adHocActivity != null) {
             if (err == ERROR_ROOT) {
@@ -209,7 +201,6 @@ public class AdHocApp extends android.app.Application {
         }
     }
     
-
     void cleanUpNotifications() {
         if ((adHocService != null) && (adHocService.getState() == AdHocService.STATE_STOPPED)) {
             processStopped(); // clean up notifications

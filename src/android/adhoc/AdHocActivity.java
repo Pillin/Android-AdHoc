@@ -56,21 +56,21 @@ public class AdHocActivity extends Activity {
             public void onClick(View v) {
                 onoff.setPressed(true);
                 if (onoff.isChecked()) {
-                	adHocApp.startService();
+                	adHocApp.startAdHoc();
                 }
                 else {
-                    adHocApp.stopService();
+                    adHocApp.stopAdHoc();
                 }
             }
         });
 
-        adHocApp.setStatusActivity(this);
+        adHocApp.setAdHocActivity(this);
     }
     
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        adHocApp.setStatusActivity(null);
+        adHocApp.setAdHocActivity(null);
     }
     
     @Override

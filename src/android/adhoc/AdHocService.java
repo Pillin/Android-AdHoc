@@ -53,15 +53,14 @@ public class AdHocService extends android.app.Service {
     public final static int STATE_STARTING = 1;
     public final static int STATE_RUNNING  = 2;
     
-    private AdHocApp app;
+    private AdHocApp adHocApp;
     private int state = STATE_STOPPED;
     private Process process = null;
     private Thread[] threads = new Thread[2];
     private PowerManager.WakeLock wakeLock;
     private WifiManager wifiManager;
     private Method mStartForeground = null;
- // WARNING: this is not entirely safe
-    public static AdHocService singleton = null;
+    public static AdHocService singleton = null;  // WARNING: this is not entirely safe
    
     
     private class OutputMonitor implements Runnable {
@@ -116,19 +115,19 @@ public class AdHocService extends android.app.Service {
         }
 
         state = STATE_STOPPED;
-        app = (AdHocApp)getApplication();
-        app.serviceStarted(this);
-
+        adHocApp = (AdHocApp)getApplication();
+        adHocApp.setAdHocService(this);
+        this.start();
+        
         // Unlock recive UDP ports
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "BarnacleService");
+        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AdHocService");
         wakeLock.acquire();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
         filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
         registerReceiver(connectivityReceiver, filter);
-        
         Log.d(TAG, String.format(getString(R.string.created), this.getClass().getSimpleName()));
     }
 
@@ -139,9 +138,9 @@ public class AdHocService extends android.app.Service {
         }
         
         // ensure we clean up
-        stopProcess();
+        stopNativeProcess();
         state = STATE_STOPPED;
-        app.processStopped();
+        adHocApp.processStopped();
         wakeLock.release();
 
         try {
@@ -158,16 +157,13 @@ public class AdHocService extends android.app.Service {
         return null;
     }
     
-    public void startRequest() {
+    
+    public void start() {
         mHandler.sendEmptyMessage(MSG_START);
     }
 
-    public void stopRequest() {
+    public void stopAdHocService() {
         mHandler.sendEmptyMessage(MSG_STOP);
-    }
-
-    public int getState() {
-        return state;
     }
 
     private void handle(Message msg) {
@@ -178,7 +174,7 @@ public class AdHocService extends android.app.Service {
             }
             Throwable thr = (Throwable)msg.obj;
             thr.printStackTrace();
-            stopProcess();
+            stopNativeProcess();
             state = STATE_STOPPED;
             break;
         case MSG_ERROR:
@@ -192,22 +188,22 @@ public class AdHocService extends android.app.Service {
                 String line = (String)msg.obj;
                 Log.e(TAG, "ERROR: " + line);
                 if ((state == STATE_STARTING)) {
-                    if (isRootError(line)) {
-                        app.failed(AdHocApp.ERROR_ROOT);
+                    if (NativeHelper.isRootError(line)) {
+                        adHocApp.failed(AdHocApp.ERROR_ROOT);
                     }
-                    else if (isSupplicantError(line)) {
-                        app.failed(AdHocApp.ERROR_SUPPLICANT);
+                    else if (NativeHelper.isSupplicantError(line)) {
+                        adHocApp.failed(AdHocApp.ERROR_SUPPLICANT);
                     }
                     else {
-                        app.failed(AdHocApp.ERROR_OTHER);
+                        adHocApp.failed(AdHocApp.ERROR_OTHER);
                     }
                 }
                 else {
-                    app.failed(AdHocApp.ERROR_OTHER);
+                    adHocApp.failed(AdHocApp.ERROR_OTHER);
                 }
             }
             else {
-            	stopProcess();
+            	stopNativeProcess();
 	            state = STATE_STOPPED;
             }
             break;
@@ -219,12 +215,12 @@ public class AdHocService extends android.app.Service {
             if (line == null) {
                 break; // ignore it, wait for MSG_ERROR(null)
             }
-            else if (isWifiOK(line)) {
+            else if (NativeHelper.isWifiOK(line)) {
                 if (state == STATE_STARTING) {
                     state = STATE_RUNNING;
                     String startedFormat = getString(R.string.started);
                     Log.d(TAG, String.format(startedFormat, this.getClass().getSimpleName()));
-                    app.processStarted();
+                    adHocApp.processStarted();
                 }
             }
             else {
@@ -254,7 +250,7 @@ public class AdHocService extends android.app.Service {
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
                 // wifi is good (or lost)
             	if ((state == STATE_STARTING) && (process == null)) {
-            		if (!startProcess()) {
+            		if (!startNativeProcess()) {
                         Log.e(TAG, getString(R.string.starterr));
                         state = STATE_STOPPED;
                         break;
@@ -263,9 +259,9 @@ public class AdHocService extends android.app.Service {
             } else {
                 if (state == STATE_RUNNING) {
                     // this is super bad, will have to restart!
-                    app.updateToast(getString(R.string.conflictwifi), true);
+                    adHocApp.updateToast(getString(R.string.conflictwifi), true);
                     Log.e(TAG, getString(R.string.conflictwifi));
-                    stopProcess();
+                    stopNativeProcess();
                     Log.d(TAG, getString(R.string.restarting));
                     wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
                     // TODO we should wait until wifi is disabled...
@@ -273,7 +269,7 @@ public class AdHocService extends android.app.Service {
                 }
                 else if (state == STATE_STARTING) {
                     if ((wifiState == WifiManager.WIFI_STATE_ENABLED) || (wifiState == WifiManager.WIFI_STATE_ENABLING)) {
-                        app.updateToast(getString(R.string.disablewifi), false);
+                        adHocApp.updateToast(getString(R.string.disablewifi), false);
                         wifiManager.setWifiEnabled(false);
                         Log.d(TAG, getString(R.string.waitwifi));
                     }
@@ -282,18 +278,23 @@ public class AdHocService extends android.app.Service {
             break;
         case MSG_STOP:
             if (state == STATE_STOPPED) return;
-            stopProcess();
+            stopNativeProcess();
             state = STATE_STOPPED;
             String stoppedFormat = getString(R.string.stopped);
             Log.d(TAG, String.format(stoppedFormat, this.getClass().getSimpleName()));
             break;
         }
-        app.updateStatus();
+        adHocApp.updateStatus();
         if (state == STATE_STOPPED) {
-            app.processStopped();
+            adHocApp.processStopped();
         }
     }
+    
 
+    public int getState() {
+        return state;
+    }
+    
     protected String[] getEnvironmentFromPrefs() {
     	ArrayList<String> envlist = new ArrayList<String>();
 
@@ -330,7 +331,7 @@ public class AdHocService extends android.app.Service {
     	return ret;
     }
 
-    private boolean startProcess() {
+    private boolean startNativeProcess() {
     	String cmd = NativeHelper.SU_C;
         try {
         	Runtime runtime = Runtime.getRuntime();
@@ -347,7 +348,7 @@ public class AdHocService extends android.app.Service {
         return true;
     }
 
-    private void stopProcess() {
+    private void stopNativeProcess() {
         if (process != null) {
             if (state != STATE_STOPPED) {
                 try {
@@ -363,7 +364,7 @@ public class AdHocService extends android.app.Service {
 
             try {
                 int exit_status = process.exitValue();
-                String formatString = getString(R.string.commandLineJavaProcess); 
+                String formatString = getString(R.string.nativeProcess); 
                 Log.i(TAG, String.format(formatString, exit_status));
             } catch (IllegalThreadStateException e) {
             	e.printStackTrace();
@@ -376,12 +377,8 @@ public class AdHocService extends android.app.Service {
         }
     }
 
-    /**
-    * This is a wrapper around the new startForeground method, using the older
-    * APIs if it is not available.
-    */
+    
     public void startForegroundCompat(int id, Notification notification) {
-        // If we have the new startForeground API, then use it.
         if (mStartForeground != null) {
             try {
                 mStartForeground.invoke(this, new Object[] {Integer.valueOf(id), notification});
@@ -395,17 +392,5 @@ public class AdHocService extends android.app.Service {
         // Fall back on the old API.
         setForeground(true);
     }
-
-    public static boolean isSupplicantError(String msg) {
-        return msg.contains("supplicant");
-    }
-
-    public static boolean isRootError(String msg) {
-        return msg.contains("ermission") || msg.contains("su: not found");
-    }
-
-    public static boolean isWifiOK(String line) {
-		return line.startsWith("WIFI: OK");
-	}
 }
 
