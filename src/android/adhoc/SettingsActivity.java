@@ -35,7 +35,7 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
 
     private void setSummary(Preference p, CharSequence s) {
         if ((s != null) && (s.length() > 0)) {
-            p.setSummary(getString(R.string.current) + s);
+            p.setSummary(this.getString(R.string.current) + s);
         } else {
             p.setSummary(null);
         }
@@ -44,17 +44,17 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        addPreferencesFromResource(R.xml.preferences);
+        this.addPreferencesFromResource(R.xml.preferences);
 
         for (int i = 0; i < prefids.length; ++i) {
-            Preference pref = findPreference(getString(prefids[i]));
+            Preference pref = this.findPreference(getString(prefids[i]));
             pref.setOnPreferenceChangeListener(this);
             if (ListPreference.class.isInstance(pref)) {
                 ListPreference preference = (ListPreference) pref;
                 setSummary(preference, preference.getValue());
             } else if (EditTextPreference.class.isInstance(pref)) {
                 EditTextPreference preference = (EditTextPreference) pref;
-                setSummary(preference, preference.getText());
+                this.setSummary(preference, preference.getText());
             }
         }
         for (int i = 0; i < checks.length; ++i) {
@@ -70,10 +70,10 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         	return true;
         }
         if (((AdHocApp)getApplication()).isRunning()) {
-            Toast.makeText(this, getString(R.string.restartneeded), Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, this.getString(R.string.restartneeded), Toast.LENGTH_SHORT).show();
         }
         if (ListPreference.class.isInstance(pref) || EditTextPreference.class.isInstance(pref)) {
-            setSummary(pref, (String)newValue);
+        	this.setSummary(pref, (String)newValue);
         }
         return true;
     }

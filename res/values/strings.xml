@@ -19,9 +19,9 @@
 <resources>
 
     <string name="app_name">AdHoc</string>
-    <string name="adhocStarted">Wireless adhoc Started!</string>
-    <string name="adhocStoped">Wireless adhoc Stoped!</string>
-    <string name="notify_running">Sharing your connection</string>
+    <string name="adhocStarted">Wireless AdHoc Started!</string>
+    <string name="adhocStoped">Wireless AdHoc Stopped!</string>
+    <string name="notify_running">Sharing %s AdHoc Wireless</string>
     <string name="notify_error">Error occured</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>
     <string name="conflictwifi">Wifi Manager is interfering with AdHoc!</string>
@@ -42,7 +42,7 @@
     <string formatted="false" name="created">%s Created!</string>
     <string formatted="false" name="starting">%s Starting…</string>
     <string formatted="false" name="started">%s Started!</string>
-    <string formatted="false" name="stopping">%s Stopping</string>
+    <string formatted="false" name="stopping">%s Stopping…</string>
     <string formatted="false" name="stopped">%s Stopped!</string>
     <string formatted="false" name="execerr">Could not execute %s</string>
     <string formatted="false" name="netschange">NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s</string>

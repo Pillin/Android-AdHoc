@@ -67,10 +67,9 @@ public class IPPreference extends EditTextPreference {
 
     public static boolean validate(String addr) {
         try {
-            //if(addr.length() == 0) // don't want empty address
-            //	return false;
-            if(java.net.InetAddress.getByName(addr) == null)
+            if(java.net.InetAddress.getByName(addr) == null) {
                 return false;
+            }
         } catch (java.net.UnknownHostException e) {
             return false;
         }

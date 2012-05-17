@@ -77,11 +77,14 @@ public class AdHocApp extends android.app.Application {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         
-        notification = new Notification(R.drawable.barnacle, getString(R.string.notify_running), 0);
+        // TODO: FVALVERD This constructor is deprecated. Use Notification.Builder instead.
+        // TODO: FVALVERD hacer que se parametrice el string a mostrar en la primera aparicion
+        notification = new Notification(R.drawable.barnacle, this.getString(R.string.notify_running), 0);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         
         String notify_error = getString(R.string.notify_error);
         PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, AdHocActivity.class), 0);
+        // TODO: FVALVERD This constructor is deprecated. Use Notification.Builder instead.
         notificationError = new Notification(R.drawable.barnacle_error,notify_error, 0);
         notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
@@ -100,9 +103,9 @@ public class AdHocApp extends android.app.Application {
 
     @Override
     public void onTerminate() {
-        if (adHocService != null) {
+        if (this.adHocService != null) {
         	Log.e(TAG, getString(R.string.stopAppRunningService));
-            adHocService.stopAdHocService();
+            this.stopAdHoc();
         }
         super.onTerminate();
     }
@@ -117,25 +120,22 @@ public class AdHocApp extends android.app.Application {
     }
     
     public void startAdHoc() {
-    	notificationManager.cancel(NOTIFY_ERROR);
+//    	TODO: FVALVERD add ProgressDialog, stop on adHocStarted
+    	this.notificationManager.cancel(NOTIFY_ERROR);
     	this.pickUpNewIP();
-    	if (adHocService == null) {
+    	if (this.adHocService == null) {
             this.startService(new Intent(this, AdHocService.class));
         }
     }
     
 	public void stopAdHoc() {
-		if (adHocService != null) {
-            adHocService.stopAdHocService();
+		if (this.adHocService != null) {
+			this.stopService(new Intent(this, AdHocService.class));
         }
     }
     
     public int getState() {
-    	int state = AdHocService.STATE_STOPPED;
-        if (adHocService != null) {
-        	state = adHocService.getState();
-        }
-        return state;
+    	return this.adHocService==null ? AdHocService.STATE_STOPPED : this.adHocService.getState();
     }
 
     public boolean isRunning() {
@@ -143,26 +143,26 @@ public class AdHocApp extends android.app.Application {
     }
     
 
-    void processStarted() {
+    public void adHocStarted() {
     	Intent ni = new Intent(this, AdHocActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
-        String notify_running = getString(R.string.notify_running); 
-        notification.setLatestEventInfo(this, app_name, notify_running, pi);
-        notificationManager.notify(NOTIFY_RUNNING, notification);
-        adHocService.startForegroundCompat(NOTIFY_RUNNING, notification);
+        String notifyRunningFormat = this.getString(R.string.notify_running);
+     // TODO: FVALVERD pasar el default text a string.xml
+        String essid = prefs.getString(this.getString(R.string.lan_essid), "");
+        String notify_running = String.format(notifyRunningFormat, essid);
+        this.notification.setLatestEventInfo(this, app_name, notify_running, pi);
+        this.notificationManager.notify(NOTIFY_RUNNING, notification);
+        this.adHocService.startForegroundCompat(NOTIFY_RUNNING, notification);
         Log.d(TAG, getString(R.string.adhocStarted));
     }
 
-    void processStopped() {
-    	notificationManager.cancel(NOTIFY_RUNNING);
-        if (adHocService != null) {
-        	adHocService.stopSelf();
-        }
-        adHocService = null;
+    public void adHocStopped() {
+    	this.notificationManager.cancel(NOTIFY_RUNNING);
+    	this.adHocService = null;
         this.updateStatus();
         Log.d(TAG, getString(R.string.adhocStoped));
-        if (previousWifiState) {
-            wifiManager.setWifiEnabled(true);
+        if (this.previousWifiState) {
+        	this.wifiManager.setWifiEnabled(true);
         }
     }
 
@@ -203,7 +203,7 @@ public class AdHocApp extends android.app.Application {
     
     void cleanUpNotifications() {
         if ((adHocService != null) && (adHocService.getState() == AdHocService.STATE_STOPPED)) {
-            processStopped(); // clean up notifications
+            adHocStopped(); // clean up notifications
         }
     }
 }

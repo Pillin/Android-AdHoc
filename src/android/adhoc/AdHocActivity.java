@@ -47,24 +47,24 @@ public class AdHocActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        adHocApp = (AdHocApp)getApplication();
+        this.adHocApp = (AdHocApp)getApplication();
         setContentView(R.layout.main);
 
-        onoff = (ToggleButton) findViewById(R.id.onoff);
-        onoff.setOnClickListener(new OnClickListener() {
+        this.onoff = (ToggleButton) findViewById(R.id.onoff);
+        this.onoff.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                onoff.setPressed(true);
+            	onoff.setPressed(true);
                 if (onoff.isChecked()) {
                 	adHocApp.startAdHoc();
                 }
                 else {
-                    adHocApp.stopAdHoc();
+                	adHocApp.stopAdHoc();
                 }
             }
         });
 
-        adHocApp.setAdHocActivity(this);
+        this.adHocApp.setAdHocActivity(this);
     }
     
     @Override
@@ -123,6 +123,7 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_ERROR) {
+        	// TODO: FVALVERD pasar este texto a string.xml
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("AdHoc Error")
@@ -143,6 +144,7 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_SUPPLICANT) {
+        	// TODO: FVALVERD pasar este texto a string.xml
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("AdHoc Supplicant not available")
@@ -163,6 +165,7 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_ASSETS) {
+        	// TODO: FVALVERD pasar este texto a string.xml
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("AdHoc Assets does not exist!")
@@ -180,20 +183,20 @@ public class AdHocActivity extends Activity {
 
     
     void updateActivityContent() {
-        if (adHocApp.adHocService != null) {
-        	switch (adHocApp.getState()) {
+        if (this.adHocApp.adHocService != null) {
+        	switch (this.adHocApp.getState()) {
 				case AdHocService.STATE_STOPPED: {
-					onoff.setChecked(false);
+					this.onoff.setChecked(false);
 					break;
 				}
 				case AdHocService.STATE_STARTING: {
-					onoff.setPressed(true);
-		            onoff.setChecked(true);
+					this.onoff.setPressed(true);
+					this.onoff.setChecked(true);
 					break;
 				}
 				case AdHocService.STATE_RUNNING: {
-					onoff.setPressed(false);
-		            onoff.setChecked(true);
+					this.onoff.setPressed(false);
+					this.onoff.setChecked(true);
 					break;
 				}
 			}

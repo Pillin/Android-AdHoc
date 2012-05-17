@@ -29,10 +29,13 @@ public class NativeHelper {
 	public static void setup(Context context, String format) {
 		missedFileFormat = format;
 		app_bin = context.getDir("bin", Context.MODE_PRIVATE).getAbsoluteFile();
+		// TODO: FVALVERD pasar este texto a string.xml
 		SU_C_FILE = new File(app_bin, "su_c");
 		SU_C = SU_C_FILE.getAbsolutePath();
+		// TODO: FVALVERD pasar este texto a string.xml
 		RUN_FILE = new File(app_bin, "run");
 		RUN = RUN_FILE.getAbsolutePath();
+		// TODO: FVALVERD pasar este texto a string.xml
 		WIFI_FILE = new File(app_bin, "wifi");
 		WIFI = WIFI_FILE.getAbsolutePath();
 	}
@@ -54,6 +57,7 @@ public class NativeHelper {
 
 				if (file.exists()) {
 					file.delete();
+					// TODO: FVALVERD pasar este texto a string.xml
 					Log.i(TAG, "rm " + file.getAbsolutePath());
 				}
 
@@ -74,6 +78,7 @@ public class NativeHelper {
 			}
 		} catch (IOException e) {
 			result = false;
+			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(NativeHelper.TAG, "Can't unzip", e);
 		}
 		chmod("0750", new File(SU_C));
@@ -87,6 +92,7 @@ public class NativeHelper {
 
 	public static void chmod(String modestr, File path) {
 		String absolute_path = path.getAbsolutePath();
+		// TODO: FVALVERD pasar este texto a string.xml
 		Log.i(TAG, "chmod " + modestr + " " + absolute_path);
 		try {
 			Class<?> fileUtils = Class.forName("android.os.FileUtils");
@@ -98,12 +104,16 @@ public class NativeHelper {
 				Log.e(TAG, "setPermissions() returned " + a + " for '" + path + "'");
 			}
 		} catch (ClassNotFoundException e) {
+			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (IllegalAccessException e) {
+			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (InvocationTargetException e) {
+			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		} catch (NoSuchMethodException e) {
+			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(TAG, "android.os.FileUtils.setPermissions() failed:", e);
 		}
 	}

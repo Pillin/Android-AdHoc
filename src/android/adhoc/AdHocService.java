@@ -105,24 +105,25 @@ public class AdHocService extends android.app.Service {
     	super.onCreate();
     	Log.d(TAG, String.format(getString(R.string.creating), this.getClass().getSimpleName()));
     	
-        singleton = this;
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+    	singleton = this;
+        this.wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        
         try {
-            mStartForeground = getClass().getMethod("startForeground", new Class[] {
+        	this.mStartForeground = getClass().getMethod("startForeground", new Class[] {
                     int.class, Notification.class});
         } catch (NoSuchMethodException e) {
-            mStartForeground = null;
+        	this.mStartForeground = null;
         }
 
-        state = STATE_STOPPED;
-        adHocApp = (AdHocApp)getApplication();
-        adHocApp.setAdHocService(this);
-        this.start();
+        this.state = STATE_STOPPED;
+        this.adHocApp = (AdHocApp)getApplication();
+        this.adHocApp.setAdHocService(this);
+        this.mHandler.sendEmptyMessage(MSG_START);
         
         // Unlock recive UDP ports
         PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-        wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AdHocService");
-        wakeLock.acquire();
+        this.wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AdHocService");
+        this.wakeLock.acquire();
 
         IntentFilter filter = new IntentFilter();
         filter.addAction(WifiManager.WIFI_STATE_CHANGED_ACTION);
@@ -133,16 +134,17 @@ public class AdHocService extends android.app.Service {
 
     @Override
     public void onDestroy() {
-        if (state != STATE_STOPPED) {
-        	Log.e(TAG, getString(R.string.destroyWhileRunning));
-        }
-        
-        // ensure we clean up
-        stopNativeProcess();
-        state = STATE_STOPPED;
-        adHocApp.processStopped();
-        wakeLock.release();
+    	Log.d(TAG, String.format(getString(R.string.stopping), this.getClass().getSimpleName()));
+    	this.mHandler.sendEmptyMessage(MSG_STOP);
+//        try {
+//        	Log.d(TAG, "ANTES de this.waitNotifyAppStopAdHoc.wait()");
+//			this.waitNotifyAppStopAdHoc.wait();
+//			Log.d(TAG, "DESPUES de this.waitNotifyAppStopAdHoc.wait()");
+//		} catch (InterruptedException e) {
+//		}
+//    	while(this.state!=STATE_STOPPED);
 
+        this.wakeLock.release();
         try {
             unregisterReceiver(connectivityReceiver);
         } catch (Exception e) {
@@ -157,58 +159,47 @@ public class AdHocService extends android.app.Service {
         return null;
     }
     
-    
-    public void start() {
-        mHandler.sendEmptyMessage(MSG_START);
-    }
-
-    public void stopAdHocService() {
-        mHandler.sendEmptyMessage(MSG_STOP);
-    }
-
     private void handle(Message msg) {
         switch (msg.what) {
         case MSG_EXCEPTION:
-            if (state == STATE_STOPPED) {
+            if (this.state == STATE_STOPPED) {
             	return;
             }
             Throwable thr = (Throwable)msg.obj;
             thr.printStackTrace();
-            stopNativeProcess();
-            state = STATE_STOPPED;
+            this.stopNativeProcess();
+            this.state = STATE_STOPPED;
             break;
         case MSG_ERROR:
-            if (state == STATE_STOPPED) {
-            	return;
-            }
-            if (process == null) {
+            if (this.state == STATE_STOPPED || this.process == null) {
             	return;
             }
             if (msg.obj != null) {
                 String line = (String)msg.obj;
+                // TODO: FVALVERD pasar este texto a string.xml
                 Log.e(TAG, "ERROR: " + line);
-                if ((state == STATE_STARTING)) {
+                if ((this.state == STATE_STARTING)) {
                     if (NativeHelper.isRootError(line)) {
-                        adHocApp.failed(AdHocApp.ERROR_ROOT);
+                        this.adHocApp.failed(AdHocApp.ERROR_ROOT);
                     }
                     else if (NativeHelper.isSupplicantError(line)) {
-                        adHocApp.failed(AdHocApp.ERROR_SUPPLICANT);
+                    	this.adHocApp.failed(AdHocApp.ERROR_SUPPLICANT);
                     }
                     else {
-                        adHocApp.failed(AdHocApp.ERROR_OTHER);
+                    	this.adHocApp.failed(AdHocApp.ERROR_OTHER);
                     }
                 }
                 else {
-                    adHocApp.failed(AdHocApp.ERROR_OTHER);
+                	this.adHocApp.failed(AdHocApp.ERROR_OTHER);
                 }
             }
             else {
-            	stopNativeProcess();
-	            state = STATE_STOPPED;
+            	this.stopNativeProcess();
+            	this.state = STATE_STOPPED;
             }
             break;
         case MSG_OUTPUT:
-            if (state == STATE_STOPPED || process == null){
+            if (this.state == STATE_STOPPED || this.process == null){
             	return;
             }
             String line = (String)msg.obj;
@@ -216,11 +207,11 @@ public class AdHocService extends android.app.Service {
                 break; // ignore it, wait for MSG_ERROR(null)
             }
             else if (NativeHelper.isWifiOK(line)) {
-                if (state == STATE_STARTING) {
-                    state = STATE_RUNNING;
-                    String startedFormat = getString(R.string.started);
+                if (this.state == STATE_STARTING) {
+                	this.state = STATE_RUNNING;
+                    String startedFormat = this.getString(R.string.started);
                     Log.d(TAG, String.format(startedFormat, this.getClass().getSimpleName()));
-                    adHocApp.processStarted();
+                    this.adHocApp.adHocStarted();
                 }
             }
             else {
@@ -228,65 +219,66 @@ public class AdHocService extends android.app.Service {
             }
             break;
         case MSG_START:
-        	if (state != STATE_STOPPED) {
+        	if (this.state != STATE_STOPPED) {
         		return;
         	}
-        	String startingFormat = getString(R.string.starting);
+        	String startingFormat = this.getString(R.string.starting);
             Log.d(TAG, String.format(startingFormat, this.getClass().getSimpleName()));
 
             if (!NativeHelper.existAssets(this)) {
-            	String format = getString(R.string.assetsProblem);
+            	String format = this.getString(R.string.assetsProblem);
                 Log.e(TAG, String.format(format, this.getClass().getSimpleName()));
-                state = STATE_STOPPED;
+                this.state = STATE_STOPPED;
                 break;
             }
-            state = STATE_STARTING;
+            this.state = STATE_STARTING;
         case MSG_NETSCHANGE:
-            int wifiState = wifiManager.getWifiState();
-            String proccesID = process == null ? "null" : "notNull";
-            String formatString = getString(R.string.netschange);
-            String formatedString = String.format(formatString, wifiState, state, proccesID); 
+            int wifiState = this.wifiManager.getWifiState();
+            String proccesID = this.process == null ? "null" : this.process.toString();
+            String formatString = this.getString(R.string.netschange);
+            String formatedString = String.format(formatString, wifiState, this.state, proccesID); 
             Log.w(TAG, formatedString);
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
-                // wifi is good (or lost)
-            	if ((state == STATE_STARTING) && (process == null)) {
-            		if (!startNativeProcess()) {
-                        Log.e(TAG, getString(R.string.starterr));
-                        state = STATE_STOPPED;
+            	if ((this.state == STATE_STARTING) && (this.process == null)) {
+            		if (!this.startNativeProcess()) {
+                        Log.e(TAG, this.getString(R.string.starterr));
+                        this.state = STATE_STOPPED;
                         break;
                     }
                 }
             } else {
-                if (state == STATE_RUNNING) {
-                    // this is super bad, will have to restart!
-                    adHocApp.updateToast(getString(R.string.conflictwifi), true);
-                    Log.e(TAG, getString(R.string.conflictwifi));
-                    stopNativeProcess();
-                    Log.d(TAG, getString(R.string.restarting));
-                    wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
-                    // TODO we should wait until wifi is disabled...
-                    state = STATE_STARTING;
+                if (this.state == STATE_RUNNING) {
+                    // TODO: FVALVERD al prender el WIFI el wifiManager lo deja como error, si se prende otra vez queda bien
+                	this.adHocApp.updateToast(this.getString(R.string.conflictwifi), true);
+                    Log.e(TAG, this.getString(R.string.conflictwifi));
+                    this.stopNativeProcess();
+                    Log.d(TAG, this.getString(R.string.restarting));
+                    this.wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
+                    this.state = STATE_STARTING;
                 }
-                else if (state == STATE_STARTING) {
+                else if (this.state == STATE_STARTING) {
                     if ((wifiState == WifiManager.WIFI_STATE_ENABLED) || (wifiState == WifiManager.WIFI_STATE_ENABLING)) {
-                        adHocApp.updateToast(getString(R.string.disablewifi), false);
-                        wifiManager.setWifiEnabled(false);
-                        Log.d(TAG, getString(R.string.waitwifi));
+                    	this.adHocApp.updateToast(this.getString(R.string.disablewifi), false);
+                        this.wifiManager.setWifiEnabled(false);
+                        Log.d(TAG, this.getString(R.string.waitwifi));
                     }
                 }
             }
             break;
         case MSG_STOP:
-            if (state == STATE_STOPPED) return;
-            stopNativeProcess();
-            state = STATE_STOPPED;
-            String stoppedFormat = getString(R.string.stopped);
+            if (this.state == STATE_STOPPED) {
+            	return;
+            }
+            this.stopNativeProcess();
+            this.state = STATE_STOPPED;
+            String stoppedFormat = this.getString(R.string.stopped);
             Log.d(TAG, String.format(stoppedFormat, this.getClass().getSimpleName()));
             break;
         }
-        adHocApp.updateStatus();
-        if (state == STATE_STOPPED) {
-            adHocApp.processStopped();
+        this.adHocApp.updateStatus();
+        if (this.state == STATE_STOPPED) {
+        	this.adHocApp.adHocStopped();
+        	this.stopSelf();
         }
     }
     
@@ -342,6 +334,7 @@ public class AdHocService extends android.app.Service {
             threads[THREAD_ERROR].start();
         } catch (Exception e) {
             Log.e(TAG, String.format(getString(R.string.execerr), cmd));
+         // TODO: FVALVERD pasar este texto a string.xml
             Log.e(TAG, "start failed " + e.toString());
             return false;
         }
@@ -383,8 +376,10 @@ public class AdHocService extends android.app.Service {
             try {
                 mStartForeground.invoke(this, new Object[] {Integer.valueOf(id), notification});
             } catch (InvocationTargetException e) {
+            	// TODO: FVALVERD pasar este texto a string.xml
                 Log.w(TAG, "Unable to invoke startForeground", e);
             } catch (IllegalAccessException e) {
+            	// TODO: FVALVERD pasar este texto a string.xml
                 Log.w(TAG, "Unable to invoke startForeground", e);
             }
             return;
