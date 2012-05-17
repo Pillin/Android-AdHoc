@@ -59,7 +59,6 @@ public class NativeHelper {
 
 				if (file.exists()) {
 					file.delete();
-					// TODO: FVALVERD pasar este texto a string.xml
 					Log.i(TAG, "rm " + file.getAbsolutePath());
 				}
 
@@ -80,7 +79,6 @@ public class NativeHelper {
 			}
 		} catch (IOException e) {
 			result = false;
-			// TODO: FVALVERD pasar este texto a string.xml
 			Log.e(NativeHelper.TAG, "Can't unzip", e);
 		}
 		chmod("0750", new File(SU_C));

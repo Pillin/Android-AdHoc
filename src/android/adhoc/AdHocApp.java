@@ -151,7 +151,6 @@ public class AdHocApp extends android.app.Application {
     	Intent ni = new Intent(this, AdHocActivity.class);
         PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
         String notifyRunningFormat = this.getString(R.string.notify_running);
-     // TODO: FVALVERD pasar el default text a string.xml
         String essid = prefs.getString(this.getString(R.string.lan_essid), "");
         String notify_running = String.format(notifyRunningFormat, essid);
         this.notification.setLatestEventInfo(this, app_name, notify_running, pi);

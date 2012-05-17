@@ -108,8 +108,8 @@ public class AdHocActivity extends Activity {
         if (id == DLG_ROOT) {
             return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("AdHoc Root Access")
-                .setMessage("AdHoc requires 'su' to access the hardware! Please, make sure you have root access.")
+                .setTitle(this.getString(R.string.rootErrorTitle))
+                .setMessage(this.getString(R.string.rootErrorMessage))
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -126,11 +126,10 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_ERROR) {
-        	// TODO: FVALVERD pasar este texto a string.xml
-            return (new AlertDialog.Builder(this))
+        	return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("AdHoc Error")
-                .setMessage("Unexpected error occured! Check the troubleshooting guide for the error printed in the log tab.")
+                .setTitle(this.getString(R.string.unexpectedErrorTitle))
+                .setMessage(this.getString(R.string.unexpectedErrorMessage))
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -147,11 +146,10 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_SUPPLICANT) {
-        	// TODO: FVALVERD pasar este texto a string.xml
-            return (new AlertDialog.Builder(this))
+        	return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("AdHoc Supplicant not available")
-                .setMessage("AdHoc had trouble starting wpa_supplicant. Try again but set 'Skip wpa_supplicant' in settings.")
+                .setTitle(this.getString(R.string.supplicantErrorTitle))
+                .setMessage(this.getString(R.string.supplicantErrorMessage))
                 .setPositiveButton("Do it now!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -168,11 +166,10 @@ public class AdHocActivity extends Activity {
                 .create();
         }
         else if (id == DLG_ASSETS) {
-        	// TODO: FVALVERD pasar este texto a string.xml
-            return (new AlertDialog.Builder(this))
+        	return (new AlertDialog.Builder(this))
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("AdHoc Assets does not exist!")
-                .setMessage("Check if AdHoc App have assets folder.")
+                .setTitle(this.getString(R.string.assetsErrorTitle))
+                .setMessage(this.getString(R.string.assetsErrorMessage))
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
@@ -183,16 +180,16 @@ public class AdHocActivity extends Activity {
         }
         else if (id == DLG_STARTING) {
         	ProgressDialog progressDialog = new ProgressDialog(this);
-	    	progressDialog.setTitle(getString(R.string.adhocStarting));
-	    	progressDialog.setMessage(getString(R.string.adhocStartingMessage));
+	    	progressDialog.setTitle(this.getString(R.string.adhocStarting));
+	    	progressDialog.setMessage(this.getString(R.string.adhocStartingMessage));
 	    	progressDialog.setIndeterminate(false);
 	    	progressDialog.setCancelable(true);
 	        return progressDialog;
         }
         else if (id == DLG_STOPPING) {
         	ProgressDialog progressDialog = new ProgressDialog(this);
-	    	progressDialog.setTitle(getString(R.string.adhocStopping));
-	    	progressDialog.setMessage(getString(R.string.adhocStoppingMessage));
+	    	progressDialog.setTitle(this.getString(R.string.adhocStopping));
+	    	progressDialog.setMessage(this.getString(R.string.adhocStoppingMessage));
 	    	progressDialog.setIndeterminate(false);
 	    	progressDialog.setCancelable(true);
 	        return progressDialog;

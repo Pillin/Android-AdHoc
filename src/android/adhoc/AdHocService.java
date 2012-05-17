@@ -176,8 +176,8 @@ public class AdHocService extends android.app.Service {
             }
             if (msg.obj != null) {
                 String line = (String)msg.obj;
-                // TODO: FVALVERD pasar este texto a string.xml
-                Log.e(TAG, "ERROR: " + line);
+                String errorFormat = this.getString(R.string.error);
+                Log.e(TAG, String.format(errorFormat, line));
                 if ((this.state == STATE_STARTING)) {
                     if (NativeHelper.isRootError(line)) {
                         this.adHocApp.adHocFailed(AdHocApp.ERROR_ROOT);
@@ -333,9 +333,11 @@ public class AdHocService extends android.app.Service {
             threads[THREAD_OUTPUT].start();
             threads[THREAD_ERROR].start();
         } catch (Exception e) {
+        	String failedFormat = this.getString(R.string.failed);
+            Log.e(TAG, String.format(failedFormat, this.getClass().getSimpleName()));
             Log.e(TAG, String.format(getString(R.string.execerr), cmd));
-         // TODO: FVALVERD pasar este texto a string.xml
-            Log.e(TAG, "start failed " + e.toString());
+            // TODO: pasar todo los e.printStackTrace(); a Log.(,,e) 
+            e.printStackTrace();
             return false;
         }
         return true;
@@ -372,15 +374,13 @@ public class AdHocService extends android.app.Service {
 
     
     public void startForegroundCompat(int id, Notification notification) {
-        if (mStartForeground != null) {
+        if (this.mStartForeground != null) {
             try {
-                mStartForeground.invoke(this, new Object[] {Integer.valueOf(id), notification});
+            	this.mStartForeground.invoke(this, new Object[] {Integer.valueOf(id), notification});
             } catch (InvocationTargetException e) {
-            	// TODO: FVALVERD pasar este texto a string.xml
-                Log.w(TAG, "Unable to invoke startForeground", e);
+                Log.w(TAG, this.getString(R.string.unableStartForeground), e);
             } catch (IllegalAccessException e) {
-            	// TODO: FVALVERD pasar este texto a string.xml
-                Log.w(TAG, "Unable to invoke startForeground", e);
+            	Log.w(TAG, this.getString(R.string.unableStartForeground), e);
             }
             return;
         }

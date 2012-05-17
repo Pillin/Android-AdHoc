@@ -28,18 +28,29 @@
     <string name="notify_running">Sharing %s AdHoc Wireless</string>
     <string name="notify_error">Error occured</string>
     <string name="disablewifi">Disabling Wifi Manager…</string>
-    <string name="conflictwifi">Wifi Manager is interfering with AdHoc!</string>
     <string name="waitwifi">Waiting until Wifi is disabled</string>
     <string name="restarting">Restarting…</string>
-    <string name="starterr">Could not start the process!</string>
-    <string name="unpackerr">Could not unpack binaries</string>
-    <string name="dirtystop">Warning: did not finish cleanly</string>
-    <string name="stopAppRunningService">The app is terminated while the service is running!</string>
     <string name="invalidip">Invalid IP address</string>
     <string name="current">Current: </string>
     <string name="restartneeded">Restart for changes to take effect</string>
+    
+    <string name="conflictwifi">Wifi Manager is interfering with AdHoc!</string>
+    <string name="starterr">Could not start the process!</string>
+    <string name="dirtystop">Warning: did not finish cleanly</string>
+    <string name="unpackerr">Could not unpack binaries</string>
+    <string name="stopAppRunningService">The app is terminated while the service is running!</string>
     <string name="destroyWhileRunning">Service destroyed while running!</string>
     <string name="notifyingError">Notifying error</string>
+    <string name="rootErrorTitle">AdHoc Root Access</string>
+    <string name="rootErrorMessage">AdHoc requires \'su\' to access the hardware! Please, make sure you have root access.</string>
+    <string name="unexpectedErrorTitle">Unexpected AdHoc Error</string>
+    <string name="unexpectedErrorMessage">Unexpected error occured! Check the troubleshooting guide for the error printed in the log tab.</string>
+    <string name="supplicantErrorTitle">AdHoc Supplicant not available</string>
+    <string name="supplicantErrorMessage">AdHoc had trouble starting wpa_supplicant. Try again but set \'Skip wpa_supplicant\' in settings.</string>
+    <string name="assetsErrorTitle">AdHoc Assets does not exist!</string>
+    <string name="assetsErrorMessage">Check if AdHoc App have assets folder.</string>
+    <string name="unableStartForeground">Unable to invoke startForeground"</string>
+    
     <string formatted="false" name="missedAssetsFiles">Missed %s assets file</string>
     <string formatted="false" name="assetsProblem">Check assets files. %s STOP!</string>
     <string formatted="false" name="creating">%s Creating…</string>
@@ -48,6 +59,8 @@
     <string formatted="false" name="started">%s Started!</string>
     <string formatted="false" name="stopping">%s Stopping…</string>
     <string formatted="false" name="stopped">%s Stopped!</string>
+    <string formatted="false" name="failed">%s Failed!</string>
+    <string formatted="false" name="error">ERROR: %s</string>
     <string formatted="false" name="execerr">Could not execute %s</string>
     <string formatted="false" name="netschange">NETSCHANGE: AndroidWifiState=%d AppState=%d process=%s</string>
     <string formatted="false" name="nativeProcess">Native Process exited with status: %d</string>
