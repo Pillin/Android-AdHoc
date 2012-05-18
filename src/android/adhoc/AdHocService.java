@@ -284,7 +284,7 @@ public class AdHocService extends android.app.Service {
             Log.d(TAG, String.format(stoppedFormat, this.getClass().getSimpleName()));
             break;
         }
-        this.adHocApp.updateStatus();
+        this.adHocApp.adHocUpdated(this.state);
         if (this.state == STATE_STOPPED) {
         	this.adHocApp.adHocStopped();
         	this.stopSelf();

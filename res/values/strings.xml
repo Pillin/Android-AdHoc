@@ -49,7 +49,8 @@
     <string name="supplicantErrorMessage">AdHoc had trouble starting wpa_supplicant. Try again but set \'Skip wpa_supplicant\' in settings.</string>
     <string name="assetsErrorTitle">AdHoc Assets does not exist!</string>
     <string name="assetsErrorMessage">Check if AdHoc App have assets folder.</string>
-    <string name="unableStartForeground">Unable to invoke startForeground"</string>
+    <string name="unableStartForeground">Unable to invoke startForeground</string>
+    <string name="lanWextTryAgain">Settings updated, try again…</string>
     
     <string formatted="false" name="missedAssetsFiles">Missed %s assets file</string>
     <string formatted="false" name="assetsProblem">Check assets files. %s STOP!</string>

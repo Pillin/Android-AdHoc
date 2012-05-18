@@ -79,8 +79,7 @@ public class AdHocActivity extends Activity {
     @Override
     protected void onResume() {
         super.onResume();
-        this.updateActivityContent();
-        adHocApp.cleanUpNotifications();
+        this.adHocApp.requestUpdateAdHocActivity();
     }
 
     
@@ -151,8 +150,7 @@ public class AdHocActivity extends Activity {
                 .setPositiveButton("Do it now!", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        adHocApp.prefs.edit().putBoolean(getString(R.string.lan_wext), true).commit();
-                        adHocApp.updateToast("Settings updated, try again...", true);
+                    	adHocApp.setLanWext(true);
                     }
                 })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
@@ -196,24 +194,22 @@ public class AdHocActivity extends Activity {
     }
 
     
-    void updateActivityContent() {
-        if (this.adHocApp.adHocService != null) {
-        	switch (this.adHocApp.getState()) {
-				case AdHocService.STATE_STOPPED: {
-					this.onoff.setChecked(false);
-					break;
-				}
-				case AdHocService.STATE_STARTING: {
-					this.onoff.setPressed(true);
-					this.onoff.setChecked(true);
-					break;
-				}
-				case AdHocService.STATE_RUNNING: {
-					this.onoff.setPressed(false);
-					this.onoff.setChecked(true);
-					break;
-				}
+    void updateContent(int state) {
+    	switch (state) {
+			case AdHocService.STATE_STOPPED: {
+				this.onoff.setChecked(false);
+				break;
 			}
-        }
+			case AdHocService.STATE_STARTING: {
+				this.onoff.setPressed(true);
+				this.onoff.setChecked(true);
+				break;
+			}
+			case AdHocService.STATE_RUNNING: {
+				this.onoff.setPressed(false);
+				this.onoff.setChecked(true);
+				break;
+			}
+		}
     }
 }
