@@ -182,16 +182,12 @@ public class AdHocApp extends android.app.Application {
 	    } catch(Exception e) {}
         if (adHocActivity != null) {
             if (err == ERROR_ROOT) {
-            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
-                adHocActivity.showDialog(AdHocActivity.DLG_ROOT);
+            	adHocActivity.showDialog(AdHocActivity.DLG_ROOT);
             } else if (err == ERROR_SUPPLICANT) {
-            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
-                adHocActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
+            	adHocActivity.showDialog(AdHocActivity.DLG_SUPPLICANT);
             } else if (err == ERROR_OTHER) {
-            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
-                adHocActivity.showDialog(AdHocActivity.DLG_ERROR);
+            	adHocActivity.showDialog(AdHocActivity.DLG_ERROR);
             } else if (err == ERROR_ASSETS) {
-            	// TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead
             	adHocActivity.showDialog(AdHocActivity.DLG_ASSETS);
             }
         }

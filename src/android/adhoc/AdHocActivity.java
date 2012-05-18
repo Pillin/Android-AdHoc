@@ -100,8 +100,6 @@ public class AdHocActivity extends Activity {
         return(super.onOptionsItemSelected(item));
     }
 
-    
-    // TODO: FVALVERD This method is deprecated. Use the new DialogFragment class with FragmentManager instead;
     @Override
     protected Dialog onCreateDialog(int id) {
         // TODO: these should not create and remove dialogs, but restore and dismiss

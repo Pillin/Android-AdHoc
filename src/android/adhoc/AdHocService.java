@@ -233,6 +233,9 @@ public class AdHocService extends android.app.Service {
             }
             this.state = STATE_STARTING;
         case MSG_NETSCHANGE:
+        	if (this.state == STATE_STOPPED) {
+        		return;
+        	}
             int wifiState = this.wifiManager.getWifiState();
             String proccesID = this.process == null ? "null" : this.process.toString();
             String formatString = this.getString(R.string.netschange);
@@ -246,18 +249,24 @@ public class AdHocService extends android.app.Service {
                         break;
                     }
                 }
-            } else {
-                if (this.state == STATE_RUNNING) {
-                    // TODO: FVALVERD al prender el WIFI el wifiManager lo deja como error, si se prende otra vez queda bien
+            }
+            else {
+            	if (wifiState == WifiManager.WIFI_STATE_DISABLING || wifiState == WifiManager.WIFI_STATE_ENABLING) {
+            		break;
+            	}
+            	if (this.state == STATE_RUNNING) {
                 	this.adHocApp.updateToast(this.getString(R.string.conflictwifi), true);
                     Log.w(TAG, this.getString(R.string.conflictwifi));
                     this.stopNativeProcess();
                     Log.d(TAG, this.getString(R.string.restarting));
-                    this.wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
+                    this.wifiManager.setWifiEnabled(false);
                     this.state = STATE_STARTING;
                 }
                 else if (this.state == STATE_STARTING) {
-                    if ((wifiState == WifiManager.WIFI_STATE_ENABLED) || (wifiState == WifiManager.WIFI_STATE_ENABLING)) {
+                	if (wifiState == WifiManager.WIFI_STATE_UNKNOWN) {
+                		this.wifiManager.setWifiEnabled(true);
+                	}
+                	else if (wifiState == WifiManager.WIFI_STATE_ENABLED) {
                     	this.adHocApp.updateToast(this.getString(R.string.disablewifi), false);
                         this.wifiManager.setWifiEnabled(false);
                         Log.d(TAG, this.getString(R.string.waitwifi));
