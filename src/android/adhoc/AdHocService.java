@@ -237,7 +237,7 @@ public class AdHocService extends android.app.Service {
             String proccesID = this.process == null ? "null" : this.process.toString();
             String formatString = this.getString(R.string.netschange);
             String formatedString = String.format(formatString, wifiState, this.state, proccesID); 
-            Log.i(TAG, formatedString);
+            Log.d(TAG, formatedString);
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
             	if ((this.state == STATE_STARTING) && (this.process == null)) {
             		if (!this.startNativeProcess()) {
@@ -334,10 +334,8 @@ public class AdHocService extends android.app.Service {
             threads[THREAD_ERROR].start();
         } catch (Exception e) {
         	String failedFormat = this.getString(R.string.failed);
-            Log.e(TAG, String.format(failedFormat, this.getClass().getSimpleName()));
-            Log.e(TAG, String.format(getString(R.string.execerr), cmd));
-            // TODO: FVALVERD pasar todo los e.printStackTrace(); a Log.(,,e) 
-            e.printStackTrace();
+        	Log.e(TAG, String.format(getString(R.string.execerr), cmd));
+        	Log.e(TAG, String.format(failedFormat, this.getClass().getSimpleName()), e);
             return false;
         }
         return true;
@@ -349,7 +347,6 @@ public class AdHocService extends android.app.Service {
                 try {
                     process.getOutputStream().close();
                 } catch (Exception e) {
-                	e.printStackTrace();
                 }
             }
             try {
@@ -362,8 +359,7 @@ public class AdHocService extends android.app.Service {
                 String formatString = getString(R.string.nativeProcess); 
                 Log.i(TAG, String.format(formatString, exit_status));
             } catch (IllegalThreadStateException e) {
-            	e.printStackTrace();
-                Log.e(TAG, getString(R.string.dirtystop));
+            	Log.e(TAG, getString(R.string.dirtystop), e);
             }
             process.destroy();
             process = null;
