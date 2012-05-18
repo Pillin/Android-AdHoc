@@ -77,14 +77,11 @@ public class AdHocApp extends android.app.Application {
         notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
         toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         
-        // TODO: FVALVERD This constructor is deprecated. Use Notification.Builder instead.
-        // TODO: FVALVERD hacer que se parametrice el string a mostrar en la primera aparicion
-        notification = new Notification(R.drawable.barnacle, this.getString(R.string.notify_running), 0);
+        notification = new Notification(R.drawable.barnacle, "", 0);
         notification.flags |= Notification.FLAG_ONGOING_EVENT;
         
         String notify_error = getString(R.string.notify_error);
         PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, AdHocActivity.class), 0);
-        // TODO: FVALVERD This constructor is deprecated. Use Notification.Builder instead.
         notificationError = new Notification(R.drawable.barnacle_error,notify_error, 0);
         notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
         notificationError.flags = Notification.FLAG_AUTO_CANCEL;
@@ -148,14 +145,18 @@ public class AdHocApp extends android.app.Application {
     	try {
     		this.adHocActivity.dismissDialog(AdHocActivity.DLG_STARTING);
     	} catch(Exception e) {}
-    	Intent ni = new Intent(this, AdHocActivity.class);
-        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
-        String notifyRunningFormat = this.getString(R.string.notify_running);
+    	
+    	String notifyRunningFormat = this.getString(R.string.notify_running);
         String essid = prefs.getString(this.getString(R.string.lan_essid), "");
-        String notify_running = String.format(notifyRunningFormat, essid);
-        this.notification.setLatestEventInfo(this, app_name, notify_running, pi);
+        String runningMessage = String.format(notifyRunningFormat, essid);
+        
+        this.notification.tickerText = runningMessage; 
+        Intent ni = new Intent(this, AdHocActivity.class);
+        PendingIntent pi = PendingIntent.getActivity(this, 0, ni, 0);
+        this.notification.setLatestEventInfo(this, app_name, runningMessage, pi);
         this.notificationManager.notify(NOTIFY_RUNNING, notification);
         this.adHocService.startForegroundCompat(NOTIFY_RUNNING, notification);
+        
         Log.d(TAG, getString(R.string.adhocStarted));
     }
 

@@ -237,7 +237,7 @@ public class AdHocService extends android.app.Service {
             String proccesID = this.process == null ? "null" : this.process.toString();
             String formatString = this.getString(R.string.netschange);
             String formatedString = String.format(formatString, wifiState, this.state, proccesID); 
-            Log.w(TAG, formatedString);
+            Log.i(TAG, formatedString);
             if (wifiState == WifiManager.WIFI_STATE_DISABLED) {
             	if ((this.state == STATE_STARTING) && (this.process == null)) {
             		if (!this.startNativeProcess()) {
@@ -250,7 +250,7 @@ public class AdHocService extends android.app.Service {
                 if (this.state == STATE_RUNNING) {
                     // TODO: FVALVERD al prender el WIFI el wifiManager lo deja como error, si se prende otra vez queda bien
                 	this.adHocApp.updateToast(this.getString(R.string.conflictwifi), true);
-                    Log.e(TAG, this.getString(R.string.conflictwifi));
+                    Log.w(TAG, this.getString(R.string.conflictwifi));
                     this.stopNativeProcess();
                     Log.d(TAG, this.getString(R.string.restarting));
                     this.wifiManager.setWifiEnabled(false); // this will send MSG_NETSCHANGE
@@ -336,7 +336,7 @@ public class AdHocService extends android.app.Service {
         	String failedFormat = this.getString(R.string.failed);
             Log.e(TAG, String.format(failedFormat, this.getClass().getSimpleName()));
             Log.e(TAG, String.format(getString(R.string.execerr), cmd));
-            // TODO: pasar todo los e.printStackTrace(); a Log.(,,e) 
+            // TODO: FVALVERD pasar todo los e.printStackTrace(); a Log.(,,e) 
             e.printStackTrace();
             return false;
         }
