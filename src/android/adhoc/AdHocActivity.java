@@ -28,12 +28,9 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.View;
-import android.view.View.OnClickListener;
-import android.widget.ToggleButton;
 
 
-public class AdHocActivity extends Activity {
+public abstract class AdHocActivity extends Activity {
 	
 	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
@@ -42,31 +39,14 @@ public class AdHocActivity extends Activity {
     final static int DLG_STARTING = 5;
     final static int DLG_STOPPING = 6;
 	
-	private AdHocApp adHocApp;
-    private ToggleButton onoff;
+	protected AdHocApp adHocApp;
     
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         this.adHocApp = (AdHocApp)getApplication();
         setContentView(R.layout.main);
-
-        this.onoff = (ToggleButton) findViewById(R.id.onoff);
-        this.onoff.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	onoff.setPressed(true);
-                if (onoff.isChecked()) {
-                	adHocApp.startAdHoc();
-                }
-                else {
-                	adHocApp.stopAdHoc();
-                }
-            }
-        });
-
         this.adHocApp.setAdHocActivity(this);
     }
     
@@ -194,22 +174,5 @@ public class AdHocActivity extends Activity {
     }
 
     
-    void updateContent(int state) {
-    	switch (state) {
-			case AdHocService.STATE_STOPPED: {
-				this.onoff.setChecked(false);
-				break;
-			}
-			case AdHocService.STATE_STARTING: {
-				this.onoff.setPressed(true);
-				this.onoff.setChecked(true);
-				break;
-			}
-			case AdHocService.STATE_RUNNING: {
-				this.onoff.setPressed(false);
-				this.onoff.setChecked(true);
-				break;
-			}
-		}
-    }
+    abstract public void updateContent(int state);
 }
