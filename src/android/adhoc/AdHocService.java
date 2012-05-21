@@ -49,6 +49,7 @@ public class AdHocService extends android.app.Service {
     final static int MSG_NETSCHANGE = 4;
     final static int MSG_START      = 5;
     final static int MSG_STOP       = 6;
+    public final static int STATE_FAILED  = -1;
     public final static int STATE_STOPPED  = 0;
     public final static int STATE_STARTING = 1;
     public final static int STATE_RUNNING  = 2;
@@ -103,25 +104,25 @@ public class AdHocService extends android.app.Service {
     @Override
     public void onCreate() {
     	super.onCreate();
-    	Log.d(TAG, String.format(getString(R.string.creating), this.getClass().getSimpleName()));
+    	Log.d(TAG, String.format(this.getString(R.string.creating), this.getClass().getSimpleName()));
     	
     	singleton = this;
-        this.wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
+        this.wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
         
         try {
-        	this.mStartForeground = getClass().getMethod("startForeground", new Class[] {
+        	this.mStartForeground = this.getClass().getMethod("startForeground", new Class[] {
                     int.class, Notification.class});
         } catch (NoSuchMethodException e) {
         	this.mStartForeground = null;
         }
 
         this.state = STATE_STOPPED;
-        this.adHocApp = (AdHocApp)getApplication();
+        this.adHocApp = (AdHocApp) this.getApplication();
         this.adHocApp.setAdHocService(this);
         this.mHandler.sendEmptyMessage(MSG_START);
         
         // Unlock recive UDP ports
-        PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+        PowerManager pm = (PowerManager) this.getSystemService(Context.POWER_SERVICE);
         this.wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "AdHocService");
         this.wakeLock.acquire();
 
@@ -162,16 +163,16 @@ public class AdHocService extends android.app.Service {
     private void handle(Message msg) {
         switch (msg.what) {
         case MSG_EXCEPTION:
-            if (this.state == STATE_STOPPED) {
+            if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
             	return;
             }
             Throwable thr = (Throwable)msg.obj;
             thr.printStackTrace();
             this.stopNativeProcess();
-            this.state = STATE_STOPPED;
+            this.state = STATE_FAILED;
             break;
         case MSG_ERROR:
-            if (this.state == STATE_STOPPED || this.process == null) {
+            if (this.state == STATE_STOPPED || this.state == STATE_FAILED || this.process == null) {
             	return;
             }
             if (msg.obj != null) {
@@ -195,11 +196,11 @@ public class AdHocService extends android.app.Service {
             }
             else {
             	this.stopNativeProcess();
-            	this.state = STATE_STOPPED;
             }
+			this.state = STATE_FAILED;
             break;
         case MSG_OUTPUT:
-            if (this.state == STATE_STOPPED || this.process == null){
+            if (this.state == STATE_STOPPED || this.state == STATE_FAILED || this.process == null){
             	return;
             }
             String line = (String)msg.obj;
@@ -219,21 +220,21 @@ public class AdHocService extends android.app.Service {
             }
             break;
         case MSG_START:
-        	if (this.state != STATE_STOPPED) {
+        	if (this.state != STATE_STOPPED && this.state != STATE_FAILED) {
         		return;
         	}
-        	String startingFormat = this.getString(R.string.starting);
+    		String startingFormat = this.getString(R.string.starting);
             Log.d(TAG, String.format(startingFormat, this.getClass().getSimpleName()));
 
             if (!NativeHelper.existAssets(this)) {
             	String format = this.getString(R.string.assetsProblem);
                 Log.e(TAG, String.format(format, this.getClass().getSimpleName()));
-                this.state = STATE_STOPPED;
+                this.state = STATE_FAILED;
                 break;
             }
             this.state = STATE_STARTING;
         case MSG_NETSCHANGE:
-        	if (this.state == STATE_STOPPED) {
+        	if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
         		return;
         	}
             int wifiState = this.wifiManager.getWifiState();
@@ -245,7 +246,7 @@ public class AdHocService extends android.app.Service {
             	if ((this.state == STATE_STARTING) && (this.process == null)) {
             		if (!this.startNativeProcess()) {
                         Log.e(TAG, this.getString(R.string.starterr));
-                        this.state = STATE_STOPPED;
+                        this.state = STATE_FAILED;
                         break;
                     }
                 }
@@ -275,7 +276,7 @@ public class AdHocService extends android.app.Service {
             }
             break;
         case MSG_STOP:
-            if (this.state == STATE_STOPPED) {
+            if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
             	return;
             }
             this.stopNativeProcess();
@@ -285,7 +286,7 @@ public class AdHocService extends android.app.Service {
             break;
         }
         this.adHocApp.adHocUpdated(this.state);
-        if (this.state == STATE_STOPPED) {
+        if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
         	this.adHocApp.adHocStopped();
         	this.stopSelf();
         }
@@ -352,7 +353,7 @@ public class AdHocService extends android.app.Service {
 
     private void stopNativeProcess() {
         if (process != null) {
-            if (state != STATE_STOPPED) {
+            if (state != STATE_STOPPED && state != STATE_FAILED) {
                 try {
                     process.getOutputStream().close();
                 } catch (Exception e) {

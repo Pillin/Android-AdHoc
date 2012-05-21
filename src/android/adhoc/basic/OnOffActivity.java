@@ -27,7 +27,8 @@ import android.adhoc.AdHocActivity;
 import android.adhoc.AdHocService;
 import android.adhoc.R;
 
-public class OnOffActivity extends AdHocActivity {
+
+public class OnOffActivity extends AdHocActivity implements OnClickListener {
 	
 	final static int DLG_ROOT = 1;
     final static int DLG_ERROR = 2;
@@ -43,27 +44,33 @@ public class OnOffActivity extends AdHocActivity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
-        this.onoff = (ToggleButton) findViewById(R.id.onoff);
-        this.onoff.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-            	onoff.setPressed(true);
-                if (onoff.isChecked()) {
-                	adHocApp.startAdHoc();
-                }
-                else {
-                	adHocApp.stopAdHoc();
-                }
-            }
-        });
-
+        this.onoff = (ToggleButton) this.findViewById(R.id.onoff);
+        this.onoff.setOnClickListener(this);
     }
+    
+    public void onClick(View view) {
+    	this.onoff.setPressed(true);
+		if (this.onoff.isChecked()) {
+			this.requestStartAdHoc();
+		}
+		else {
+			this.requestStopAdHoc();
+		}
+	}
 
-    @Override
+    protected void requestStartAdHoc() {
+    	this.adHocApp.startAdHoc();
+	}
+
+	protected void requestStopAdHoc() {
+		this.adHocApp.stopAdHoc();
+	}
+
+	
+	@Override
     public void updateContent(int state) {
     	switch (state) {
-			case AdHocService.STATE_STOPPED: {
+			case AdHocService.STATE_STOPPED: case AdHocService.STATE_FAILED: {
 				this.onoff.setChecked(false);
 				break;
 			}
@@ -79,4 +86,5 @@ public class OnOffActivity extends AdHocActivity {
 			}
 		}
     }
+
 }

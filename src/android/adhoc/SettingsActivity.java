@@ -63,7 +63,7 @@ public class SettingsActivity extends PreferenceActivity implements Preference.O
         }
     }
 
-    @Override
+//    @Override
     public boolean onPreferenceChange(Preference pref, Object newValue) {
         String key = pref.getKey();
         if (key == null) {

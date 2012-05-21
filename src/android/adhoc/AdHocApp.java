@@ -29,15 +29,18 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
+//import android.HLMPConnect.R;
+//import android.adhoc.R;
+
 
 public class AdHocApp extends android.app.Application {
     final static String TAG = "AdHocApp";
     public static String app_name;
     
-    final static int ERROR_ROOT = 1;
-    final static int ERROR_OTHER = 2;
-    final static int ERROR_SUPPLICANT = 3;
-    final static int ERROR_ASSETS = 4;
+    public final static int ERROR_ROOT = 1;
+    public final static int ERROR_OTHER = 2;
+    public final static int ERROR_SUPPLICANT = 3;
+    public final static int ERROR_ASSETS = 4;
 
     final static int NOTIFY_RUNNING = 0;
     final static int NOTIFY_ERROR = 1;
@@ -51,17 +54,7 @@ public class AdHocApp extends android.app.Application {
     private NotificationManager notificationManager;
     private Notification notification;
     private Notification notificationError;
-    
-    
-    private void pickUpNewIP() {
-    	SharedPreferences.Editor e = prefs.edit();
-    	String ipFormat = getString(R.string.ipFormat);
-    	ipFormat = String.format(ipFormat, (int)(Math.random()*255), (int)(Math.random()*255));
-    	e.putString(getString(R.string.lan_gw), ipFormat);
-    	e.commit();
-    	Log.i(TAG, "Generated IP: " + ipFormat);
-	}
-
+	
     
     @Override
     public void onCreate() {
@@ -71,23 +64,23 @@ public class AdHocApp extends android.app.Application {
         
         app_name = getString(R.string.app_name);
         PreferenceManager.setDefaultValues(this, R.xml.preferences, false);
-        prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        this.prefs = PreferenceManager.getDefaultSharedPreferences(this);
 
-        notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-        toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
+        this.notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        this.toast = Toast.makeText(this, "", Toast.LENGTH_SHORT);
         
-        notification = new Notification(R.drawable.barnacle, "", 0);
-        notification.flags |= Notification.FLAG_ONGOING_EVENT;
+        this.notification = new Notification(R.drawable.barnacle, "", 0);
+        this.notification.flags |= Notification.FLAG_ONGOING_EVENT;
         
         String notify_error = getString(R.string.notify_error);
         PendingIntent pi = PendingIntent.getActivity(this, 0, new Intent(this, AdHocActivity.class), 0);
-        notificationError = new Notification(R.drawable.barnacle_error,notify_error, 0);
-        notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
-        notificationError.flags = Notification.FLAG_AUTO_CANCEL;
+        this.notificationError = new Notification(R.drawable.barnacle_error, notify_error, 0);
+        this.notificationError.setLatestEventInfo(this, app_name, notify_error, pi);
+        this.notificationError.flags = Notification.FLAG_AUTO_CANCEL;
 
-        wifiManager = (WifiManager) getSystemService(Context.WIFI_SERVICE);
-        if (previousWifiState = wifiManager.isWifiEnabled()) {
-            wifiManager.setWifiEnabled(false);
+        this.wifiManager = (WifiManager) this.getSystemService(Context.WIFI_SERVICE);
+        if (this.previousWifiState = this.wifiManager.isWifiEnabled()) {
+        	this.wifiManager.setWifiEnabled(false);
         }
         Log.d(TAG, String.format(getString(R.string.created), this.getClass().getSimpleName()));
         
@@ -99,13 +92,24 @@ public class AdHocApp extends android.app.Application {
 
     @Override
     public void onTerminate() {
+    	Log.i("AdHocApp", "AdHocApp distroying...");
         if (this.adHocService != null) {
         	Log.e(TAG, getString(R.string.stopAppRunningService));
             this.stopAdHoc();
         }
         super.onTerminate();
+        Log.i("AdHocApp", "AdHocApp distroying... OK!");
     }
     
+    
+    protected void pickUpNewIP() {
+    	SharedPreferences.Editor e = prefs.edit();
+    	String ipFormat = getString(R.string.ipFormat);
+    	ipFormat = String.format(ipFormat, (int)(Math.random()*255), (int)(Math.random()*255));
+    	e.putString(getString(R.string.lan_gw), ipFormat);
+    	e.commit();
+    	Log.i(TAG, "Generated IP: " + ipFormat);
+	}
     
     public void setAdHocActivity(AdHocActivity adHocActivity) {
         this.adHocActivity = adHocActivity;
@@ -121,8 +125,11 @@ public class AdHocApp extends android.app.Application {
 	}
     
     public void startAdHoc() {
-    	this.adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
     	this.notificationManager.cancel(NOTIFY_ERROR);
+    	Log.d(TAG, "ANTES de DLG_STARTING ");
+    	this.adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
+    	this.adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
+    	Log.d(TAG, "DESPUES de DLG_STARTING ");
     	this.pickUpNewIP();
     	if (this.adHocService == null) {
             this.startService(new Intent(this, AdHocService.class));
@@ -136,7 +143,7 @@ public class AdHocApp extends android.app.Application {
         }
     }
     
-    private int getAdHocServiceState() {
+    protected int getAdHocServiceState() {
     	return this.adHocService==null ? AdHocService.STATE_STOPPED : this.adHocService.getState();
     }
 
@@ -148,6 +155,12 @@ public class AdHocApp extends android.app.Application {
 		this.adHocUpdated(this.getAdHocServiceState());
 	}
 
+    protected String getIPAdress() {
+    	return prefs.getString(this.getString(R.string.lan_gw), "127.0.0.1");
+    }
+    
+    
+    // AdHocService Notifications
     
     public void adHocStarted() {
     	try {

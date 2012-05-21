@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 
@@ -45,15 +46,17 @@ public abstract class AdHocActivity extends Activity {
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.adHocApp = (AdHocApp)getApplication();
-        setContentView(R.layout.main);
+        this.adHocApp = (AdHocApp)this.getApplication();
+        this.setContentView(R.layout.main_adhoc);
         this.adHocApp.setAdHocActivity(this);
     }
     
     @Override
     protected void onDestroy() {
+    	Log.i("AdHocActivity", "AdHocActivity distroying...");
+        this.adHocApp.setAdHocActivity(null);
         super.onDestroy();
-        adHocApp.setAdHocActivity(null);
+        Log.i("AdHocActivity", "AdHocActivity distroying... OK!");
     }
     
     @Override
@@ -65,7 +68,7 @@ public abstract class AdHocActivity extends Activity {
     
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.menu, menu);
+        this.getMenuInflater().inflate(R.menu.menu, menu);
         return true;
     }
     
@@ -73,7 +76,7 @@ public abstract class AdHocActivity extends Activity {
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 	        case R.id.menu_prefs:
-	            startActivity(new Intent(this, SettingsActivity.class));
+	            this.startActivity(new Intent(this, SettingsActivity.class));
 	            return true;
         }
         return(super.onOptionsItemSelected(item));
@@ -88,14 +91,14 @@ public abstract class AdHocActivity extends Activity {
                 .setTitle(this.getString(R.string.rootErrorTitle))
                 .setMessage(this.getString(R.string.rootErrorMessage))
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Uri uri = Uri.parse(getString(R.string.rootUrl));
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     }
                  })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	removeDialog(DLG_ROOT);
                     }
@@ -108,14 +111,14 @@ public abstract class AdHocActivity extends Activity {
                 .setTitle(this.getString(R.string.unexpectedErrorTitle))
                 .setMessage(this.getString(R.string.unexpectedErrorMessage))
                 .setPositiveButton("Help", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                         Uri uri = Uri.parse(getString(R.string.fixUrl));
                         startActivity(new Intent(Intent.ACTION_VIEW, uri));
                     }
                 })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	removeDialog(DLG_ERROR);
                     }
@@ -128,13 +131,13 @@ public abstract class AdHocActivity extends Activity {
                 .setTitle(this.getString(R.string.supplicantErrorTitle))
                 .setMessage(this.getString(R.string.supplicantErrorMessage))
                 .setPositiveButton("Do it now!", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	adHocApp.setLanWext(true);
                     }
                 })
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	removeDialog(DLG_ROOT);
                     }
@@ -147,7 +150,7 @@ public abstract class AdHocActivity extends Activity {
                 .setTitle(this.getString(R.string.assetsErrorTitle))
                 .setMessage(this.getString(R.string.assetsErrorMessage))
                 .setNegativeButton("Close", new DialogInterface.OnClickListener() {
-                    @Override
+//                    @Override
                     public void onClick(DialogInterface dialog, int which) {
                     	removeDialog(DLG_ROOT);
                     }
@@ -175,4 +178,5 @@ public abstract class AdHocActivity extends Activity {
 
     
     abstract public void updateContent(int state);
+
 }
