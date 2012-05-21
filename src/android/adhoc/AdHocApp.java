@@ -29,9 +29,6 @@ import android.preference.PreferenceManager;
 import android.util.Log;
 import android.widget.Toast;
 
-//import android.HLMPConnect.R;
-//import android.adhoc.R;
-
 
 public class AdHocApp extends android.app.Application {
     final static String TAG = "AdHocApp";
@@ -126,10 +123,7 @@ public class AdHocApp extends android.app.Application {
     
     public void startAdHoc() {
     	this.notificationManager.cancel(NOTIFY_ERROR);
-    	Log.d(TAG, "ANTES de DLG_STARTING ");
     	this.adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
-    	this.adHocActivity.showDialog(AdHocActivity.DLG_STARTING);
-    	Log.d(TAG, "DESPUES de DLG_STARTING ");
     	this.pickUpNewIP();
     	if (this.adHocService == null) {
             this.startService(new Intent(this, AdHocService.class));

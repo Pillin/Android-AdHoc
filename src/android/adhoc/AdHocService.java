@@ -22,6 +22,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Map;
+
 import android.app.Notification;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -137,13 +138,6 @@ public class AdHocService extends android.app.Service {
     public void onDestroy() {
     	Log.d(TAG, String.format(getString(R.string.stopping), this.getClass().getSimpleName()));
     	this.mHandler.sendEmptyMessage(MSG_STOP);
-//        try {
-//        	Log.d(TAG, "ANTES de this.waitNotifyAppStopAdHoc.wait()");
-//			this.waitNotifyAppStopAdHoc.wait();
-//			Log.d(TAG, "DESPUES de this.waitNotifyAppStopAdHoc.wait()");
-//		} catch (InterruptedException e) {
-//		}
-//    	while(this.state!=STATE_STOPPED);
 
         this.wakeLock.release();
         try {
@@ -167,7 +161,7 @@ public class AdHocService extends android.app.Service {
             	return;
             }
             Throwable thr = (Throwable)msg.obj;
-            thr.printStackTrace();
+            Log.e(TAG, "", thr);
             this.stopNativeProcess();
             this.state = STATE_FAILED;
             break;
@@ -233,6 +227,7 @@ public class AdHocService extends android.app.Service {
                 break;
             }
             this.state = STATE_STARTING;
+            break;
         case MSG_NETSCHANGE:
         	if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
         		return;
@@ -276,18 +271,20 @@ public class AdHocService extends android.app.Service {
             }
             break;
         case MSG_STOP:
-            if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
+            if (this.state == STATE_STOPPED) {
             	return;
             }
             this.stopNativeProcess();
-            this.state = STATE_STOPPED;
-            String stoppedFormat = this.getString(R.string.stopped);
+            if (this.state != STATE_FAILED) {
+            	this.state = STATE_STOPPED;
+            }
+            this.adHocApp.adHocStopped();
+        	String stoppedFormat = this.getString(R.string.stopped);
             Log.d(TAG, String.format(stoppedFormat, this.getClass().getSimpleName()));
             break;
         }
         this.adHocApp.adHocUpdated(this.state);
-        if (this.state == STATE_STOPPED || this.state == STATE_FAILED) {
-        	this.adHocApp.adHocStopped();
+        if (this.state == STATE_FAILED) {
         	this.stopSelf();
         }
     }
